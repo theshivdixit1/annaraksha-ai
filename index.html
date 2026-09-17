@@ -1,0 +1,1868 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Annaraksha AI — National Food Grain Wastage Prevention Platform</title>
+  <meta name="description" content="AI-driven food grain wastage prevention platform for Bitexindustries / Unbeatable Foods integrating Agmarknet, IMD radar, satellite imagery, computer vision grain scanning, predictive spoilage analytics, and value-chain matchmaking." />
+  <meta property="og:title" content="Annaraksha AI — National Food Grain Defense Grid" />
+  <meta property="og:description" content="Predictive telemetry, multimodal grain scanning, and automated value-chain matchmaking across India's grain reserves." />
+  <meta property="og:type" content="website" />
+  <meta property="og:image" content="assets/images/logo.png" />
+  <link rel="apple-touch-icon" href="assets/images/logo.png" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
+  
+  <script>
+    // Universal API base resolver: if hosted statically on a custom domain (e.g. ServerByte),
+    // automatically proxy API calls to the live Cloud Run backend so AI Copilot, weather, and live data work!
+    window.ANNARAKSHA_API_BASE = (function() {
+      if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname.includes('run.app')) {
+        return '';
+      }
+      return 'https://ais-pre-n4m7vz2ayebu74wch4aisl-926414202659.asia-southeast1.run.app';
+    })();
+
+    // Intercept native fetch so all relative /api/ calls automatically route to Cloud Run when hosted statically
+    (function() {
+      const _origFetch = window.fetch;
+      window.fetch = function(input, init) {
+        if (typeof input === 'string' && input.startsWith('/api/')) {
+          const base = window.ANNARAKSHA_API_BASE || '';
+          return _origFetch(base + input, init);
+        }
+        return _origFetch(input, init);
+      };
+    })();
+
+    // Suppress unhandled Google Maps billing/auth errors to prevent unhandled runtime errors
+    (function() {
+      const _origError = console.error;
+      console.error = function(...args) {
+        if (args && args.some(arg => typeof arg === 'string' && (arg.includes('BillingNotEnabledMapError') || arg.includes('Google Maps JavaScript API error')))) {
+          console.warn('[Google Maps Platform]', ...args);
+          return;
+        }
+        _origError.apply(console, args);
+      };
+      window.gm_authFailure = function() {
+        window.googleMapsAuthFailed = true;
+        console.warn('[Google Maps Platform] Auth/billing notice received. Base Google Satellite map active.');
+        if (window.dashboardEngine && typeof window.dashboardEngine.fallbackToSatelliteMap === 'function') {
+          window.dashboardEngine.fallbackToSatelliteMap();
+        }
+      };
+    })();
+  </script>
+
+  <!-- Interactive Mapping & Google Satellite Layer Engine -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+  <!-- Three.js & OrbitControls for 3D WebGL Digital Twin & Grain Scanner -->
+  <script src="https://cdn.jsdelivr.net/npm/three@0.145.0/build/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.145.0/examples/js/controls/OrbitControls.js"></script>
+
+  <link rel="icon" type="image/png" href="assets/images/logo.png" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body style="overflow:hidden; display:flex; flex-direction:column; height:100vh; background:#070a12; color:#f8fafc; position:relative;">
+
+  <!-- Ambient 3D Cyber Matrix Particles Background Canvas -->
+  <canvas id="cyber-matrix-bg" style="position:fixed; inset:0; pointer-events:none; z-index:0; opacity:0.65;"></canvas>
+
+  <!-- =========================================================================
+       TOP INGESTION & LIVE ALERTS TICKER BAR
+       ========================================================================= -->
+  <div class="ticker-bar" role="region" aria-label="Real-time Telemetry & Ingestion Feeds" style="position:relative; z-index:50;">
+    <div class="ticker-label">
+      <span class="ticker-pulse"></span>
+      <span>National Grid Alerts</span>
+    </div>
+    <div class="ticker-content" id="live-ticker-stream">
+      <span style="color:#94a3b8; font-size:0.75rem;">Connecting to national telemetry network...</span>
+    </div>
+    <!-- Live Agmarknet Stream -->
+    <div style="display:flex; align-items:center; gap:0.5rem; border-left:1px solid rgba(255,255,255,0.1); padding-left:0.75rem;">
+      <span style="color:#06b6d4; font-size:0.7rem; font-weight:700; text-transform:uppercase;">Agmarknet Mandis:</span>
+      <div id="hud-mandi-ticker" style="display:flex; gap:0.75rem; font-size:0.72rem;">
+        <span style="color:#94a3b8;">Syncing mandi feeds...</span>
+      </div>
+    </div>
+    <div style="font-size:0.7rem; color:#10b981; font-family:var(--font-mono); white-space:nowrap; margin-left:auto;">
+      ● LIVE SYNC
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       FUTURISTIC HUD PRIMARY NAVIGATION HEADER
+       ========================================================================= -->
+  <header class="navbar" style="flex-shrink:0; position:relative; z-index:40;">
+    <div class="nav-container">
+      <div class="brand-wrapper" id="brand-header-trigger" title="Click to inspect Annaraksha 3D Holographic Identity">
+        <div class="brand-logo-container">
+          <div class="brand-logo-holo-ring"></div>
+          <img src="assets/images/logo.png" alt="Annaraksha AI 3D Logo" class="brand-logo-img" />
+          <div class="brand-logo-glint"></div>
+        </div>
+        <div>
+          <div class="brand-title">
+            <span>ANNARAKSHA AI</span>
+            <span class="hud-os-badge">OS 3.6 PRO</span>
+            <span class="hud-3d-indicator">3D ENGINE</span>
+          </div>
+          <div class="brand-sub">Bitexindustries &bull; Unbeatable Foods</div>
+        </div>
+      </div>
+
+      <!-- Unified HUD Navigation Tabs -->
+      <div class="hud-tabs-container" role="tablist">
+        <button class="hud-tab-btn active" data-target="view-grid">
+          <span>🛰️ Operations Grid</span>
+        </button>
+        <button class="hud-tab-btn" data-target="view-scanner">
+          <span>📸 AI Grain Scanner</span>
+        </button>
+        <button class="hud-tab-btn" data-target="view-workorders">
+          <span>⚡ Work Orders</span>
+        </button>
+        <button class="hud-tab-btn" data-target="view-valuechain">
+          <span>🏭 Value-Chain & Buyers</span>
+        </button>
+        <button class="hud-tab-btn" data-target="view-logistics">
+          <span>🚚 Transit & OCR</span>
+        </button>
+        <button class="hud-tab-btn" data-target="view-impact">
+          <span>📈 ESG Impact</span>
+        </button>
+        <button class="hud-tab-btn" data-target="view-directory">
+          <span>📋 Directory</span>
+        </button>
+        <button class="hud-tab-btn" data-target="view-silo">
+          <span>🔬 3D Silo Twin</span>
+        </button>
+        <button class="hud-tab-btn" data-target="view-spoilage">
+          <span>⏳ 2-Mo Spoilage Predictor</span>
+        </button>
+      </div>
+
+      <!-- Feed Ingestion Health, Audio Synthesizer & Live Clock -->
+      <div style="display:flex; align-items:center; gap:0.6rem;">
+        <button id="audio-toggle-btn" class="audio-hud-toggle" title="Toggle Futuristic Cyber Audio SFX">
+          <span id="audio-icon">🔊</span>
+          <span id="audio-label">SFX ON</span>
+        </button>
+
+        <button id="holo-showcase-btn" class="audio-hud-toggle" style="border-color:rgba(16,185,129,0.4); color:#10b981;" title="View 3D Holographic Platform Identity">
+          <span>💎 3D HOLO</span>
+        </button>
+
+        <div class="feed-sync-pills">
+          <div class="sync-pill" title="Agmarknet Mandi API Active">
+            <span class="sync-pill-dot"></span>
+            <span>AGMARKNET</span>
+          </div>
+          <div class="sync-pill" title="IMD Doppler Weather Radar Feed">
+            <span class="sync-pill-dot"></span>
+            <span>IMD RADAR</span>
+          </div>
+          <div class="sync-pill" title="FCI / CWC Godown Stock Buffer Live Ingest">
+            <span class="sync-pill-dot"></span>
+            <span>FCI/CWC</span>
+          </div>
+          <div class="sync-pill" title="ISRO RISAT-1A & Sentinel-2 10m NDVI Satellite">
+            <span class="sync-pill-dot"></span>
+            <span>SENTINEL-2</span>
+          </div>
+        </div>
+        <div id="hud-live-clock" style="font-family:var(--font-mono); font-size:0.75rem; color:#06b6d4; font-weight:700; background:rgba(6,182,212,0.1); border:1px solid rgba(6,182,212,0.25); padding:0.25rem 0.6rem; border-radius:6px; white-space:nowrap;">
+          --:--:-- IST
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- =========================================================================
+       MAIN UNIFIED DASHBOARD CONTAINER
+       ========================================================================= -->
+  <div style="flex:1; position:relative; overflow:hidden;">
+
+    <!-- =======================================================================
+         MODULE 1: OPERATIONS GRID & SPATIAL MAP (DEFAULT ACTIVE)
+         ======================================================================= -->
+    <div id="view-grid" class="hud-module-pane" style="display:block; height:100%;">
+      <div class="dashboard-layout">
+        <!-- Left Rail: Filters, Summary, Facilities -->
+        <aside class="dashboard-sidebar">
+          <div class="sidebar-header">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <h2 style="font-size:0.95rem; font-weight:800; color:#ffffff; text-transform:uppercase; letter-spacing:0.04em;">Storage Facilities</h2>
+              <span style="font-size:0.72rem; color:#06b6d4; font-family:var(--font-mono); font-weight:700;" id="facilities-count-badge">60 Monitored</span>
+            </div>
+
+            <div class="sidebar-controls">
+              <input type="text" id="filter-search" class="input-search" placeholder="Search facility, city, state, crop..." />
+              <div class="filter-row">
+                <select id="filter-state" class="select-filter">
+                  <option value="">All States</option>
+                </select>
+                <select id="filter-grain" class="select-filter">
+                  <option value="">All Grains</option>
+                  <option value="wheat">Wheat</option>
+                  <option value="rice">Rice</option>
+                  <option value="bajra">Bajra</option>
+                  <option value="jowar">Jowar</option>
+                  <option value="chana">Chana</option>
+                  <option value="moong">Moong</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick Risk Filter Pills -->
+          <div class="sidebar-summary-grid">
+            <div class="summary-pill healthy-pill" id="pill-healthy" title="Filter Healthy">
+              <div class="summary-pill-count" style="color:#10b981;" id="count-healthy">--</div>
+              <div class="summary-pill-label">Healthy</div>
+            </div>
+            <div class="summary-pill watch-pill" id="pill-watch" title="Filter Watch">
+              <div class="summary-pill-count" style="color:#f59e0b;" id="count-watch">--</div>
+              <div class="summary-pill-label">Watch</div>
+            </div>
+            <div class="summary-pill critical-pill" id="pill-critical" title="Filter Critical">
+              <div class="summary-pill-count" style="color:#f43f5e;" id="count-critical">--</div>
+              <div class="summary-pill-label">Critical</div>
+            </div>
+          </div>
+
+          <!-- Units List Scroll -->
+          <div class="units-list-scroll" id="units-list">
+            <div style="text-align:center; padding:2rem 1rem; color:#64748b;">
+              Loading telemetry nodes...
+            </div>
+          </div>
+        </aside>
+
+        <!-- Map Viewport -->
+        <main class="map-viewport">
+          <div id="map"></div>
+
+          <!-- Futuristic 3D Radar Sweep HUD Element -->
+          <div class="map-radar-container" title="ISRO RISAT-1A & IMD Radar Sweep">
+            <div class="map-radar-sweep"></div>
+            <div class="map-radar-cross-h"></div>
+            <div class="map-radar-cross-v"></div>
+            <div class="map-radar-ring"></div>
+            <div class="map-radar-label">3D RADAR</div>
+          </div>
+
+          <!-- Map Floating HUD Metrics Overlay -->
+          <div style="position:absolute; top:1rem; left:1rem; z-index:25; display:flex; gap:0.6rem; pointer-events:none; flex-wrap:wrap;">
+            <div style="background:rgba(14,21,38,0.92); backdrop-filter:blur(8px); border:1px solid rgba(255,255,255,0.1); border-radius:10px; padding:0.5rem 0.85rem; box-shadow:var(--shadow-hud); pointer-events:auto;">
+              <div style="font-size:0.65rem; font-weight:700; text-transform:uppercase; color:#94a3b8; letter-spacing:0.04em;">Stock Under Guard</div>
+              <div style="font-size:1.1rem; font-weight:800; color:#ffffff; font-family:var(--font-mono);" id="metric-total-stock">54,890,200 T</div>
+            </div>
+            <div style="background:rgba(14,21,38,0.92); backdrop-filter:blur(8px); border:1px solid rgba(244,63,94,0.3); border-radius:10px; padding:0.5rem 0.85rem; box-shadow:var(--shadow-hud); pointer-events:auto;">
+              <div style="font-size:0.65rem; font-weight:700; text-transform:uppercase; color:#f43f5e; letter-spacing:0.04em;">At-Risk Capital</div>
+              <div style="font-size:1.1rem; font-weight:800; color:#f43f5e; font-family:var(--font-mono);" id="metric-at-risk-rupees">--</div>
+            </div>
+            <div style="background:rgba(14,21,38,0.92); backdrop-filter:blur(8px); border:1px solid rgba(16,185,129,0.3); border-radius:10px; padding:0.5rem 0.85rem; box-shadow:var(--shadow-hud); pointer-events:auto;">
+              <div style="font-size:0.65rem; font-weight:700; text-transform:uppercase; color:#10b981; letter-spacing:0.04em;">Protected Loss Rate</div>
+              <div style="font-size:1.1rem; font-weight:800; color:#10b981; font-family:var(--font-mono);">0.38% (vs 8.5% Base)</div>
+            </div>
+          </div>
+        </main>
+
+        <!-- Slide-Out Unit Detail Drawer & AI Agronomic Console (HUD Glass) -->
+        <aside class="unit-drawer" id="unit-drawer" aria-label="Storage facility telemetry details">
+          <div class="drawer-header">
+            <div>
+              <div id="drawer-unit-id" style="font-size:0.72rem; color:#06b6d4; font-family:var(--font-mono); font-weight:700; text-transform:uppercase;">Unit #--</div>
+              <h3 id="drawer-unit-name" style="font-size:1.1rem; font-weight:800; color:#ffffff; line-height:1.2; margin-top:2px;">Facility Name</h3>
+              <div id="drawer-location" style="font-size:0.78rem; color:#94a3b8; margin-top:2px;">City, State</div>
+            </div>
+            <button id="drawer-close-btn" class="drawer-close-btn" aria-label="Close detail panel">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M18 6 6 18M6 6l12 12"/>
+              </svg>
+            </button>
+          </div>
+
+          <div class="drawer-body">
+            <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:0.75rem 1rem;">
+              <span style="font-size:0.78rem; font-weight:600; color:#94a3b8;">Risk Status:</span>
+              <div id="drawer-status-pill">--</div>
+            </div>
+
+            <!-- Moisture Gauge Card -->
+            <div class="telemetry-gauge-card">
+              <div style="display:flex; justify-content:space-between; align-items:baseline;">
+                <span style="font-size:0.75rem; font-weight:700; color:#06b6d4; text-transform:uppercase;">Moisture Telemetry</span>
+                <span id="drawer-moisture-val" style="font-size:1.5rem; font-weight:800; color:#ffffff; font-family:var(--font-mono);">--%</span>
+              </div>
+              <div class="gauge-meter-wrapper">
+                <div id="drawer-gauge-bar" class="gauge-meter-bar" style="width:0%; background:#10b981;"></div>
+              </div>
+              <div style="display:flex; justify-content:space-between; font-size:0.68rem; color:#64748b;">
+                <span>Safe (&lt;13%)</span>
+                <span>Watch (13.5-15%)</span>
+                <span>Critical (&gt;15.5%)</span>
+              </div>
+            </div>
+
+            <!-- 2-Month (60-Day) Spoilage Wastage Predictor Card -->
+            <div id="drawer-spoilage-predictor-panel" style="background:linear-gradient(145deg, rgba(16,24,43,0.95), rgba(245,158,11,0.08)); border:1px solid rgba(245,158,11,0.35); border-radius:12px; padding:0.95rem; display:flex; flex-direction:column; gap:0.65rem;">
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div style="display:flex; align-items:center; gap:0.4rem;">
+                  <span style="font-size:0.95rem;">⏳</span>
+                  <span style="font-size:0.75rem; font-weight:800; text-transform:uppercase; color:#f59e0b; letter-spacing:0.03em;">2-Month Spoilage Wastage Predictor</span>
+                </div>
+                <div id="drawer-60d-hazard-pill" style="font-size:0.65rem; font-weight:700; font-family:var(--font-mono); padding:2px 8px; border-radius:999px; background:rgba(245,158,11,0.15); color:#f59e0b; border:1px solid rgba(245,158,11,0.3);">
+                  CALCULATING...
+                </div>
+              </div>
+
+              <!-- Stock Arrival Date & Elapsed Storage Age -->
+              <div style="background:rgba(4,9,20,0.7); border:1px solid rgba(255,255,255,0.06); border-radius:8px; padding:0.5rem 0.65rem; display:flex; flex-direction:column; gap:0.35rem;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                  <span style="font-size:0.68rem; font-weight:700; color:#94a3b8; text-transform:uppercase;">Stock Arrival Date:</span>
+                  <span id="drawer-storage-age-badge" style="font-size:0.65rem; color:#06b6d4; font-family:var(--font-mono); font-weight:700; background:rgba(6,182,212,0.1); padding:1px 6px; border-radius:4px;">
+                    -- days stored
+                  </span>
+                </div>
+                <div style="display:flex; gap:0.4rem; align-items:center;">
+                  <input type="date" id="drawer-arrival-date-input" style="flex:1; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.12); color:#ffffff; font-size:0.74rem; font-family:var(--font-mono); padding:0.3rem 0.5rem; border-radius:6px; outline:none;" />
+                  <button id="drawer-save-arrival-btn" class="btn btn-secondary" style="padding:0.3rem 0.6rem; font-size:0.68rem; white-space:nowrap;" title="Persist updated stock arrival date to database">
+                    💾 Save
+                  </button>
+                </div>
+              </div>
+
+              <!-- Spoilage Window & 60-Day Loss Projections -->
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.5rem; background:rgba(4,9,20,0.5); border:1px solid rgba(255,255,255,0.05); border-radius:8px; padding:0.55rem;">
+                <div>
+                  <div style="font-size:0.62rem; color:#94a3b8; text-transform:uppercase;">Breach Horizon</div>
+                  <div id="drawer-countdown" style="font-size:1.05rem; font-weight:800; color:#fde68a; font-family:var(--font-mono); margin-top:1px;">--</div>
+                  <div style="font-size:0.62rem; color:#cbd5e1;">Date: <strong id="drawer-spoilage-date" style="color:#ffffff;">--</strong></div>
+                </div>
+                <div>
+                  <div style="font-size:0.62rem; color:#94a3b8; text-transform:uppercase;">60-Day Wastage Risk</div>
+                  <div id="drawer-60d-wastage-tonnes" style="font-size:1.05rem; font-weight:800; color:#f43f5e; font-family:var(--font-mono); margin-top:1px;">-- T</div>
+                  <div style="font-size:0.62rem; color:#cbd5e1;">Loss: <strong id="drawer-60d-loss-cr" style="color:#f43f5e;">₹-- Cr</strong></div>
+                </div>
+              </div>
+
+              <!-- 5-Milestone Forward Degradation Stepper -->
+              <div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.3rem;">
+                  <span style="font-size:0.65rem; color:#94a3b8; text-transform:uppercase; font-weight:700;">60-Day Degradation Milestones</span>
+                  <span style="font-size:0.62rem; color:#64748b;">ASAE D535 Standard</span>
+                </div>
+                <div id="drawer-60d-milestones" style="display:grid; grid-template-columns:repeat(5, 1fr); gap:3px;">
+                  <!-- Dynamic 5 steps injected via JS -->
+                </div>
+              </div>
+
+              <!-- Gemini Agronomic Diagnosis Accordion in Drawer -->
+              <div id="drawer-gemini-spoilage-box" style="display:none; background:rgba(99,102,241,0.08); border:1px solid rgba(99,102,241,0.25); border-radius:8px; padding:0.6rem; font-size:0.7rem; color:#cbd5e1; line-height:1.4;">
+                <div style="font-weight:700; color:#818cf8; margin-bottom:0.25rem; display:flex; justify-content:space-between;">
+                  <span>🤖 Gemini Agronomic Synthesis:</span>
+                  <span id="drawer-gemini-spoilage-model" style="font-family:var(--font-mono); font-size:0.62rem; color:#a5b4fc;">gemini-3.8-flash</span>
+                </div>
+                <div id="drawer-gemini-spoilage-text">--</div>
+                <div id="drawer-gemini-salvage-directive" style="margin-top:0.4rem; padding-top:0.4rem; border-top:1px dashed rgba(99,102,241,0.2); color:#34d399;">--</div>
+              </div>
+
+              <!-- Action Buttons -->
+              <div style="display:flex; gap:0.4rem;">
+                <button id="drawer-open-full-spoilage-btn" class="btn btn-secondary" style="flex:1; padding:0.4rem; font-size:0.68rem; display:flex; align-items:center; justify-content:center; gap:0.3rem;">
+                  <span>🔍 Full 60-Day Simulator</span>
+                </button>
+                <button id="drawer-run-ai-spoilage-btn" class="btn btn-primary" style="flex:1; padding:0.4rem; font-size:0.68rem; display:flex; align-items:center; justify-content:center; gap:0.3rem;">
+                  <span>🤖 AI Diagnosis</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- 2x2 Telemetry Grid -->
+            <div class="metrics-2col">
+              <div class="mini-stat-card">
+                <div class="mini-stat-label">Crop Stored</div>
+                <div id="drawer-grain-type" class="mini-stat-value" style="color:#ffffff;">--</div>
+              </div>
+              <div class="mini-stat-card">
+                <div class="mini-stat-label">Stock Volume</div>
+                <div id="drawer-stock" class="mini-stat-value" style="color:#06b6d4;">--</div>
+              </div>
+              <div class="mini-stat-card">
+                <div class="mini-stat-label">Capacity Utilized</div>
+                <div id="drawer-utilization" class="mini-stat-value" style="color:#10b981;">--</div>
+              </div>
+              <div class="mini-stat-card">
+                <div class="mini-stat-label">Total Asset Value</div>
+                <div id="drawer-total-value" class="mini-stat-value" style="color:#f59e0b;">--</div>
+              </div>
+            </div>
+
+            <!-- 7-Day Moisture Trend Sparkline -->
+            <div style="background:rgba(16,24,43,0.7); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:0.85rem;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.4rem;">
+                <span style="font-size:0.72rem; font-weight:700; color:#94a3b8; text-transform:uppercase;">7-Day Moisture Trajectory</span>
+                <span style="font-size:0.68rem; color:#06b6d4; font-family:var(--font-mono);">Telemetry Logs</span>
+              </div>
+              <canvas id="drawer-telemetry-chart" style="width:100%; height:100px;"></canvas>
+            </div>
+
+            <!-- Real-Time Psychrometric Aeration & Meteorological Dew Point Engine -->
+            <div id="drawer-weather-panel" style="background:linear-gradient(135deg, rgba(8,18,36,0.95), rgba(6,182,212,0.08)); border:1px solid rgba(6,182,212,0.3); border-radius:12px; padding:1rem; display:flex; flex-direction:column; gap:0.65rem;">
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div style="display:flex; align-items:center; gap:0.4rem;">
+                  <span style="font-size:0.9rem;">🌤️</span>
+                  <span style="font-size:0.8rem; font-weight:700; color:#ffffff;">Psychrometric Aeration Engine</span>
+                </div>
+                <span id="drawer-weather-sync-status" style="font-size:0.65rem; color:#38bdf8; font-family:var(--font-mono); background:rgba(6,182,212,0.12); padding:1px 6px; border-radius:999px; border:1px solid rgba(6,182,212,0.25);">
+                  IMD / Open-Meteo
+                </span>
+              </div>
+
+              <!-- Ambient Conditions Grid -->
+              <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:0.5rem; background:rgba(4,9,20,0.6); border:1px solid rgba(255,255,255,0.05); border-radius:8px; padding:0.5rem 0.6rem; text-align:center;">
+                <div>
+                  <div style="font-size:0.62rem; color:#94a3b8; text-transform:uppercase;">Ambient Temp</div>
+                  <div id="drawer-ambient-temp" style="font-size:0.88rem; font-weight:700; color:#ffffff; font-family:var(--font-mono); margin-top:2px;">--°C</div>
+                </div>
+                <div>
+                  <div style="font-size:0.62rem; color:#94a3b8; text-transform:uppercase;">Ambient RH</div>
+                  <div id="drawer-ambient-rh" style="font-size:0.88rem; font-weight:700; color:#06b6d4; font-family:var(--font-mono); margin-top:2px;">--%</div>
+                </div>
+                <div>
+                  <div style="font-size:0.62rem; color:#94a3b8; text-transform:uppercase;">Dew Point</div>
+                  <div id="drawer-dew-point" style="font-size:0.88rem; font-weight:700; color:#34d399; font-family:var(--font-mono); margin-top:2px;">--°C</div>
+                </div>
+              </div>
+
+              <!-- Real-time Aeration Safety Verdict Banner -->
+              <div id="drawer-aeration-verdict-card" style="background:rgba(16,185,129,0.12); border-left:3px solid #10b981; padding:0.5rem 0.75rem; border-radius:0 6px 6px 0; font-size:0.75rem;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                  <strong id="drawer-aeration-verdict-title" style="color:#34d399;">Optimal Aeration Window</strong>
+                  <span id="drawer-dew-margin" style="font-size:0.68rem; font-family:var(--font-mono); color:#94a3b8;">Δ +5.2°C margin</span>
+                </div>
+                <div id="drawer-aeration-rationale" style="color:#cbd5e1; font-size:0.7rem; margin-top:2px; line-height:1.35;">
+                  Dew point is well below internal grain temperature. Safe to run intake blowers.
+                </div>
+              </div>
+
+              <!-- 24-Hour Timeline Bar -->
+              <div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.25rem;">
+                  <span style="font-size:0.65rem; color:#94a3b8; font-weight:600; text-transform:uppercase;">24-Hour Aeration Forecast (Hourly)</span>
+                  <span id="drawer-best-window-tag" style="font-size:0.65rem; color:#38bdf8; font-family:var(--font-mono); font-weight:700;">Best: 02:00 - 06:30 IST</span>
+                </div>
+                <div class="aeration-timeline-strip" id="drawer-aeration-timeline">
+                  <!-- Hourly blocks injected via JS -->
+                </div>
+              </div>
+
+              <!-- Action: Trigger Automated Aeration Sequence -->
+              <button id="drawer-trigger-aeration-btn" class="btn btn-primary" style="padding:0.45rem 0.75rem; font-size:0.74rem; display:flex; align-items:center; justify-content:center; gap:0.35rem;">
+                <span>⚡ Execute PID Aeration Sequence</span>
+              </button>
+            </div>
+
+            <!-- Dedicated Unclipped AI Agronomic Copilot Section -->
+            <div class="drawer-ai-section" id="drawer-ai-section" style="background:linear-gradient(145deg, rgba(14,21,38,0.95), rgba(99,102,241,0.12)); border:1px solid rgba(99,102,241,0.35); border-radius:12px; padding:1rem; display:flex; flex-direction:column; gap:0.65rem;">
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div style="display:flex; align-items:center; gap:0.5rem;">
+                  <div style="width:24px; height:24px; border-radius:6px; background:rgba(99,102,241,0.25); border:1px solid #6366f1; display:flex; align-items:center; justify-content:center; color:#818cf8; font-size:0.85rem;">
+                    🤖
+                  </div>
+                  <span style="font-size:0.82rem; font-weight:700; color:#ffffff;">AI Agronomic Copilot</span>
+                </div>
+                <span style="font-size:0.65rem; color:#34d399; font-family:var(--font-mono); background:rgba(16,185,129,0.15); padding:1px 6px; border-radius:999px; border:1px solid rgba(16,185,129,0.3);">
+                  Gemini Flash &bull; Live
+                </span>
+              </div>
+
+              <!-- Live AI Assessment Card -->
+              <div id="drawer-copilot-diagnosis" style="font-size:0.78rem; color:#cbd5e1; line-height:1.45; background:rgba(7,12,24,0.6); border:1px solid rgba(255,255,255,0.06); border-radius:8px; padding:0.65rem 0.75rem;">
+                Select a facility to generate real-time AI spoilage mitigation advice.
+              </div>
+
+              <!-- Quick Action Prompt Chips -->
+              <div style="display:flex; gap:0.4rem; flex-wrap:wrap;" id="drawer-copilot-chips">
+                <button class="copilot-chip-btn" data-query="aeration" style="font-size:0.7rem; padding:4px 8px; border-radius:6px; background:rgba(6,182,212,0.12); border:1px solid rgba(6,182,212,0.3); color:#38bdf8; cursor:pointer;">
+                  🌬️ Aeration Schedule
+                </button>
+                <button class="copilot-chip-btn" data-query="spoilage" style="font-size:0.7rem; padding:4px 8px; border-radius:6px; background:rgba(245,158,11,0.12); border:1px solid rgba(245,158,11,0.3); color:#fbbf24; cursor:pointer;">
+                  ⚠️ Spoilage Risk
+                </button>
+                <button class="copilot-chip-btn" data-query="dispatch" style="font-size:0.7rem; padding:4px 8px; border-radius:6px; background:rgba(16,185,129,0.12); border:1px solid rgba(16,185,129,0.3); color:#34d399; cursor:pointer;">
+                  🚚 Transfer Route
+                </button>
+              </div>
+
+              <!-- In-Drawer Quick Chat Input -->
+              <div style="display:flex; gap:0.4rem; margin-top:0.2rem;">
+                <input type="text" id="drawer-copilot-input" placeholder="Ask AI about this facility..." style="flex:1; background:#070c18; border:1px solid rgba(255,255,255,0.15); border-radius:6px; padding:0.45rem 0.65rem; font-size:0.78rem; color:#ffffff; outline:none;" />
+                <button id="drawer-copilot-send-btn" class="btn btn-primary" style="padding:0.45rem 0.85rem; font-size:0.78rem; white-space:nowrap;">
+                  Send
+                </button>
+              </div>
+
+              <button id="drawer-ask-copilot" class="btn btn-secondary" style="width:100%; padding:0.5rem; font-size:0.76rem; border-color:rgba(99,102,241,0.4); color:#c7d2fe;">
+                <span>💬 Open Multi-Turn Copilot Chat Window &rarr;</span>
+              </button>
+
+              <!-- Official WDRA / e-NWR Certificate Action -->
+              <button id="drawer-generate-cert-btn" class="btn btn-secondary" style="width:100%; padding:0.5rem; font-size:0.76rem; border-color:rgba(6,182,212,0.4); color:#38bdf8;">
+                <span>📄 Generate WDRA / e-NWR Quality Certificate & Gate-Pass</span>
+              </button>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </div>
+
+    <!-- =======================================================================
+         MODULE 2: AI GRAIN QUALITY & MOISTURE VERIFICATION (CV / NIR)
+         ======================================================================= -->
+    <div id="view-scanner" class="hud-module-pane" style="display:none; height:100%; overflow-y:auto; padding:1.5rem;">
+      <div style="max-width:1400px; margin:0 auto; display:flex; flex-direction:column; gap:1.25rem;">
+        
+        <!-- Header -->
+        <div style="display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:1rem;">
+          <div>
+            <div style="font-size:0.75rem; font-weight:700; color:#06b6d4; text-transform:uppercase; letter-spacing:0.06em;">First-Mile Capture & Neural Vision</div>
+            <h2 style="font-size:1.6rem; font-weight:800; color:#ffffff;">AI Grain Quality & Moisture Verification</h2>
+            <p style="font-size:0.85rem; color:#94a3b8; margin-top:0.25rem;">
+              Snap-a-photo computer vision and near-infrared (NIR) spectral analysis. Flags high-moisture grain before bagging to prevent transport rot.
+            </p>
+          </div>
+
+          <!-- Sample Presets Switcher -->
+          <div style="display:flex; gap:0.4rem; flex-wrap:wrap;">
+            <button class="btn btn-secondary scanner-preset-btn active" data-preset="wheat_high_moisture" style="padding:0.4rem 0.75rem; font-size:0.75rem;">
+              🌾 Wheat (High Moisture 15.9%)
+            </button>
+            <button class="btn btn-secondary scanner-preset-btn" data-preset="rice_weevil" style="padding:0.4rem 0.75rem; font-size:0.75rem;">
+              🍚 Paddy (Weevil Infestation)
+            </button>
+            <button class="btn btn-secondary scanner-preset-btn" data-preset="chana_grade_a" style="padding:0.4rem 0.75rem; font-size:0.75rem;">
+              🫘 Chana (Grade A Buffer)
+            </button>
+            <button class="btn btn-secondary scanner-preset-btn" data-preset="bajra_mold" style="padding:0.4rem 0.75rem; font-size:0.75rem;">
+              🌽 Bajra (Mold & Mycotoxin)
+            </button>
+          </div>
+        </div>
+
+        <!-- 2-Column Scanner Layout -->
+        <div style="display:grid; grid-template-columns:1.2fr 1fr; gap:1.5rem; align-items:start;">
+          
+          <!-- Left: Optical Scan Viewport with Laser & Bounding Boxes OR 3D Holographic Model -->
+          <div style="background:rgba(14,21,38,0.9); border:1px solid rgba(6,182,212,0.3); border-radius:14px; padding:1.25rem; box-shadow:var(--shadow-hud);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
+              <span style="font-size:0.75rem; font-family:var(--font-mono); color:#06b6d4; font-weight:700;">OPTICAL NIR SENSOR VIEWPORT // LIVE FRAME</span>
+              
+              <!-- 2D vs 3D Mode Toggle -->
+              <div style="display:flex; gap:4px; background:rgba(0,0,0,0.4); padding:2px; border-radius:6px; border:1px solid rgba(255,255,255,0.08);">
+                <button id="scanner-mode-2d-btn" class="scanner-hud-btn active" style="font-size:0.68rem; padding:2px 8px;">📷 2D Camera</button>
+                <button id="scanner-mode-3d-btn" class="scanner-hud-btn" style="font-size:0.68rem; padding:2px 8px;">🔮 3D Holographic</button>
+              </div>
+            </div>
+
+            <!-- 2D Viewport Container -->
+            <div class="scanner-viewport" id="scanner-viewport-box">
+              <!-- Background Grain Image Texture / Visual -->
+              <img id="scanner-grain-image" src="https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?auto=format&fit=crop&w=1000&q=80" alt="Grain Texture" style="width:100%; height:100%; object-fit:cover; filter:contrast(1.15) brightness(0.9);" />
+              
+              <!-- Scanning Laser Line -->
+              <div class="scanner-laser" id="scanner-laser"></div>
+
+              <!-- HUD Crosshairs -->
+              <div class="scanner-crosshair scanner-crosshair-tl"></div>
+              <div class="scanner-crosshair scanner-crosshair-tr"></div>
+              <div class="scanner-crosshair scanner-crosshair-bl"></div>
+              <div class="scanner-crosshair scanner-crosshair-br"></div>
+
+              <!-- Neural Detection Overlays -->
+              <div id="scanner-overlays" style="position:absolute; inset:0; pointer-events:none;"></div>
+            </div>
+
+            <!-- 3D Holographic Grain Kernel Viewport Container (Three.js) -->
+            <div id="scanner-3d-box" style="display:none; height:340px; border-radius:10px; overflow:hidden; background:#070b14; border:1px solid rgba(6,182,212,0.4); position:relative;">
+              <!-- Three.js renders in here -->
+            </div>
+
+            <!-- Upload Custom Grain Photo Bar & Live Camera Trigger -->
+            <div style="margin-top:1rem; display:flex; gap:0.6rem; align-items:center; flex-wrap:wrap;">
+              <label class="btn btn-secondary" style="cursor:pointer; flex:1; min-width:180px; padding:0.5rem 0.85rem; display:flex; align-items:center; justify-content:center; gap:0.4rem;">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                  <polyline points="17 8 12 3 7 8"/>
+                  <line x1="12" x2="12" y1="3" y2="15"/>
+                </svg>
+                <span>Upload Photo</span>
+                <input type="file" id="grain-photo-upload" accept="image/*" style="display:none;" />
+              </label>
+
+              <!-- Live Hardware Camera Stream Button -->
+              <button id="open-grain-camera-btn" class="btn btn-secondary" style="padding:0.5rem 0.95rem; border-color:rgba(6,182,212,0.4); color:#38bdf8; display:flex; align-items:center; gap:0.4rem;">
+                <span style="font-size:0.95rem;">📸</span>
+                <span>Live Camera</span>
+              </button>
+
+              <button id="execute-scan-btn" class="btn btn-primary" style="padding:0.5rem 1.25rem;">
+                <span>Analyze Kernel Matrix</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Right: Diagnostic Quality Passport & Actionable Intervention -->
+          <div style="display:flex; flex-direction:column; gap:1rem;">
+            
+            <!-- Quality Passport Summary Card -->
+            <div style="background:rgba(14,21,38,0.9); border:1px solid rgba(255,255,255,0.08); border-radius:14px; padding:1.25rem; box-shadow:var(--shadow-hud);">
+              <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                <div>
+                  <div style="font-size:0.7rem; font-family:var(--font-mono); color:#06b6d4;" id="scan-batch-id">AGR-IN-88921-WHT</div>
+                  <h3 style="font-size:1.25rem; font-weight:800; color:#ffffff;" id="scan-grain-type">Wheat (Kalyan Sona)</h3>
+                  <div style="font-size:0.75rem; color:#94a3b8;" id="scan-location">Indore Mandi Terminal Gate #4</div>
+                </div>
+                <div id="scan-grade-badge" class="risk-pill risk-pill-watch">
+                  Grade B (Immediate Milling)
+                </div>
+              </div>
+
+              <!-- First-Mile Early Warning Banner -->
+              <div style="background:rgba(244,63,94,0.12); border-left:3px solid #f43f5e; padding:0.75rem; border-radius:0 8px 8px 0; margin-top:1rem; font-size:0.78rem;">
+                <div style="font-weight:700; color:#f43f5e; margin-bottom:2px;">⚠️ FIRST-MILE SACKING WARNING</div>
+                <div id="scan-warning-text" style="color:#fecdd3; line-height:1.4;">
+                  HIGH MOISTURE DETECTED: Do NOT bag in airtight HDPE/Jute bags. High rot risk in transport corridor within 72 hours.
+                </div>
+              </div>
+
+              <!-- Core Metrics Grid -->
+              <div style="display:grid; grid-template-columns:repeat(2, 1fr); gap:0.75rem; margin-top:1rem;">
+                <div class="mini-stat-card">
+                  <div class="mini-stat-label">Estimated Moisture</div>
+                  <div id="scan-moisture" class="mini-stat-value" style="color:#f43f5e;">15.9%</div>
+                  <div style="font-size:0.65rem; color:#94a3b8;">Threshold: &le; 13.0%</div>
+                </div>
+                <div class="mini-stat-card">
+                  <div class="mini-stat-label">Spoilage Countdown</div>
+                  <div id="scan-dts" class="mini-stat-value" style="color:#f59e0b;">4 Days DTS</div>
+                  <div style="font-size:0.65rem; color:#94a3b8;">High Respiration Active</div>
+                </div>
+                <div class="mini-stat-card">
+                  <div class="mini-stat-label">Broken Kernels</div>
+                  <div id="scan-broken" class="mini-stat-value" style="color:#ffffff;">4.8%</div>
+                </div>
+                <div class="mini-stat-card">
+                  <div class="mini-stat-label">Discolored Kernels</div>
+                  <div id="scan-discolored" class="mini-stat-value" style="color:#ffffff;">7.2%</div>
+                </div>
+                <div class="mini-stat-card">
+                  <div class="mini-stat-label">Insect / Weevil Count</div>
+                  <div id="scan-insect" class="mini-stat-value" style="color:#ffffff;">3 units</div>
+                </div>
+                <div class="mini-stat-card">
+                  <div class="mini-stat-label">Foreign Matter</div>
+                  <div id="scan-foreign" class="mini-stat-value" style="color:#ffffff;">1.4%</div>
+                </div>
+              </div>
+
+              <!-- Recharts Moisture Trend Visualization (Last 5 Scans) -->
+              <div id="moisture-trend-chart-root"></div>
+
+              <!-- Value-Chain Recommendation Box -->
+              <div style="background:rgba(6,182,212,0.08); border:1px solid rgba(6,182,212,0.25); border-radius:10px; padding:0.85rem; margin-top:1rem;">
+                <div style="font-size:0.7rem; font-weight:700; color:#06b6d4; text-transform:uppercase;">Automated Value-Chain Routing</div>
+                <div id="scan-action-rec" style="font-size:0.82rem; color:#e2e8f0; margin-top:0.35rem; line-height:1.5;">
+                  Auto-generate Work Order for mobile grain dryer aeration, or direct dispatch to Indore Flour Mill (18 km).
+                </div>
+              </div>
+
+              <!-- Action Buttons -->
+              <div style="display:flex; gap:0.5rem; margin-top:1rem;">
+                <button id="scan-trigger-wo-btn" class="btn btn-primary" style="flex:1; padding:0.6rem; font-size:0.8rem;">
+                  ⚡ Auto-Trigger Work Order
+                </button>
+                <button id="scanner-open-gatepass-btn" class="btn btn-secondary" style="padding:0.6rem 0.9rem; font-size:0.8rem; display:flex; align-items:center; gap:0.4rem; border-color:rgba(6,182,212,0.4); color:#38bdf8;">
+                  <span>📲 Official Gate-Pass & QR</span>
+                </button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- =======================================================================
+         MODULE 3: WORK ORDERS & AUTOMATED PREVENTIVE INTERVENTIONS
+         ======================================================================= -->
+    <div id="view-workorders" class="hud-module-pane" style="display:none; height:100%; overflow-y:auto; padding:1.5rem;">
+      <div style="max-width:1400px; margin:0 auto; display:flex; flex-direction:column; gap:1.25rem;">
+        <div>
+          <div style="font-size:0.75rem; font-weight:700; color:#10b981; text-transform:uppercase; letter-spacing:0.06em;">Automated Preventive Interventions</div>
+          <h2 style="font-size:1.6rem; font-weight:800; color:#ffffff;">Active Facility Work Orders</h2>
+          <p style="font-size:0.85rem; color:#94a3b8; margin-top:0.25rem;">
+            Auto-triggers mechanical fan sequences, grain turning, and hermetic fumigation routines on batches nearing thermal respiration thresholds.
+          </p>
+        </div>
+
+        <div id="work-orders-grid" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(320px, 1fr)); gap:1.25rem;">
+          <!-- Dynamically populated via js/futuristic-app.js -->
+        </div>
+      </div>
+    </div>
+
+    <!-- =======================================================================
+         MODULE 4: PROCESSING & VALUE-CHAIN RECOMMENDATION (BUYER MATCHMAKER)
+         ======================================================================= -->
+    <div id="view-valuechain" class="hud-module-pane" style="display:none; height:100%; overflow-y:auto; padding:1.5rem;">
+      <div style="max-width:1400px; margin:0 auto; display:flex; flex-direction:column; gap:1.5rem;">
+        
+        <div>
+          <div style="font-size:0.75rem; font-weight:700; color:#06b6d4; text-transform:uppercase; letter-spacing:0.06em;">Proximity Matchmaking & Arbitrage</div>
+          <h2 style="font-size:1.6rem; font-weight:800; color:#ffffff;">Value-Chain Formulation & Buyer Linkage</h2>
+          <p style="font-size:0.85rem; color:#94a3b8; margin-top:0.25rem;">
+            Routes at-risk grain to the nearest operational mill, feed plant, or distillery based on live capacity and transit distance — turning spoilage into high-margin revenue.
+          </p>
+        </div>
+
+        <!-- Waste-to-Profit Arbitrage Banner -->
+        <div style="background:linear-gradient(135deg, rgba(6,182,212,0.15) 0%, rgba(16,185,129,0.15) 100%); border:1px solid rgba(16,185,129,0.3); border-radius:14px; padding:1.25rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
+          <div>
+            <span style="font-size:0.7rem; font-weight:700; color:#10b981; text-transform:uppercase; letter-spacing:0.06em;">Waste-to-Profit Arbitrage Engine</span>
+            <h3 style="font-size:1.3rem; font-weight:800; color:#ffffff; margin-top:2px;">₹14.50 Crores Net Profit Captured</h3>
+            <p style="font-size:0.8rem; color:#cbd5e1; margin-top:2px;">
+              18,450 Tonnes of at-risk grain converted into whole wheat atta, split besan, and poultry feed instead of incurring dumping writeoffs.
+            </p>
+          </div>
+          <div style="display:flex; gap:1.5rem;">
+            <div style="text-align:right;">
+              <div style="font-size:0.7rem; color:#94a3b8;">Direct Dump Loss Avoided</div>
+              <div style="font-size:1.1rem; font-weight:800; color:#f43f5e; font-family:var(--font-mono);">₹42.30 Cr</div>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-size:0.7rem; color:#94a3b8;">Value-Added Revenue</div>
+              <div style="font-size:1.1rem; font-weight:800; color:#10b981; font-family:var(--font-mono);">₹56.80 Cr</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- At-Risk Routing Queue -->
+        <div style="display:flex; flex-direction:column; gap:1rem;">
+          <h3 style="font-size:1.1rem; font-weight:700; color:#ffffff;">Live At-Risk Proximity Routing Queue</h3>
+          <div id="value-chain-queue" style="display:flex; flex-direction:column; gap:1rem;">
+            <!-- Populated via js/futuristic-app.js -->
+          </div>
+        </div>
+
+        <!-- Verified Institutional Buyers List -->
+        <div style="background:rgba(14,21,38,0.9); border:1px solid rgba(255,255,255,0.08); border-radius:14px; padding:1.25rem;">
+          <h3 style="font-size:1.05rem; font-weight:700; color:#ffffff; margin-bottom:0.75rem;">Verified Institutional Bulk Buyers</h3>
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:0.75rem;">
+            <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.06); border-radius:8px; padding:0.75rem;">
+              <strong style="color:#ffffff;">ITC Limited (Agri-Business)</strong>
+              <div style="font-size:0.75rem; color:#06b6d4;">Flour & Packaged Foods &bull; 12,500 T Wheat</div>
+              <div style="font-size:0.7rem; color:#10b981; margin-top:2px;">5.0 ★ Procurement Partner</div>
+            </div>
+            <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.06); border-radius:8px; padding:0.75rem;">
+              <strong style="color:#ffffff;">Britannia Industries Ltd</strong>
+              <div style="font-size:0.75rem; color:#06b6d4;">Bakery & Biscuits &bull; 8,200 T Flour Grade A/B</div>
+              <div style="font-size:0.7rem; color:#10b981; margin-top:2px;">4.9 ★ Fast Clearing</div>
+            </div>
+            <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.06); border-radius:8px; padding:0.75rem;">
+              <strong style="color:#ffffff;">Cargill India</strong>
+              <div style="font-size:0.75rem; color:#06b6d4;">Pulses & Oilseeds &bull; 6,000 T Chana</div>
+              <div style="font-size:0.7rem; color:#10b981; margin-top:2px;">4.9 ★ Immediate Settlement</div>
+            </div>
+            <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.06); border-radius:8px; padding:0.75rem;">
+              <strong style="color:#ffffff;">Godrej Agrovet / Amul Feeds</strong>
+              <div style="font-size:0.75rem; color:#06b6d4;">Animal & Poultry Feed &bull; 15,000 T Grain</div>
+              <div style="font-size:0.7rem; color:#10b981; margin-top:2px;">4.8 ★ Distressed Salvage Partner</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- =======================================================================
+         MODULE 5: TRANSIT & LOGISTICS RISK MANAGEMENT (WEIGHBRIDGE OCR)
+         ======================================================================= -->
+    <div id="view-logistics" class="hud-module-pane" style="display:none; height:100%; overflow-y:auto; padding:1.5rem;">
+      <div style="max-width:1400px; margin:0 auto; display:flex; flex-direction:column; gap:1.25rem;">
+        <div>
+          <div style="font-size:0.75rem; font-weight:700; color:#06b6d4; text-transform:uppercase; letter-spacing:0.06em;">Weather-Aware Logistics & Weighbridge OCR</div>
+          <h2 style="font-size:1.6rem; font-weight:800; color:#ffffff;">Active Transit Convoys & Gate Audit</h2>
+          <p style="font-size:0.85rem; color:#94a3b8; margin-top:0.25rem;">
+            Reroutes grain trucks away from high-precipitation corridors in real time while automated weighbridge cross-checks catch pilferage and weight fraud.
+          </p>
+        </div>
+
+        <div class="directory-card" style="overflow:hidden;">
+          <div style="overflow-x:auto;">
+            <table class="directory-table">
+              <thead>
+                <tr>
+                  <th>Vehicle ID</th>
+                  <th>Cargo Volume</th>
+                  <th>Origin &rarr; Destination</th>
+                  <th>Optimized Corridor</th>
+                  <th>ETA</th>
+                  <th>Weather Radar Risk</th>
+                  <th>Weighbridge Gate Audit</th>
+                </tr>
+              </thead>
+              <tbody id="logistics-convoys-table">
+                <!-- Dynamically populated via js/futuristic-app.js -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- =======================================================================
+         MODULE 6: ESG IMPACT & WASTAGE-AVERTED LEDGER
+         ======================================================================= -->
+    <div id="view-impact" class="hud-module-pane" style="display:none; height:100%; overflow-y:auto; padding:1.5rem;">
+      <div style="max-width:1400px; margin:0 auto; display:flex; flex-direction:column; gap:1.5rem;">
+        
+        <div>
+          <div style="font-size:0.75rem; font-weight:700; color:#10b981; text-transform:uppercase; letter-spacing:0.06em;">National Impact Quantifier</div>
+          <h2 style="font-size:1.6rem; font-weight:800; color:#ffffff;">Wastage-Averted ESG Ledger</h2>
+          <p style="font-size:0.85rem; color:#94a3b8; margin-top:0.25rem;">
+            Quantified loss reduction benchmarking grain saved, capital preserved, carbon emissions avoided, and water conserved across India's supply chain.
+          </p>
+        </div>
+
+        <!-- 4 Major KPI Cards -->
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:1rem;">
+          <div style="background:rgba(14,21,38,0.9); border:1px solid rgba(16,185,129,0.3); border-radius:12px; padding:1.25rem;">
+            <div style="font-size:0.75rem; font-weight:700; text-transform:uppercase; color:#10b981;">Total Grain Saved</div>
+            <div id="impact-tonnes" style="font-size:1.85rem; font-weight:900; color:#ffffff; font-family:var(--font-mono); margin-top:0.25rem;">48,250 MT</div>
+            <div style="font-size:0.75rem; color:#94a3b8; margin-top:0.25rem;">95.5% loss reduction vs baseline</div>
+          </div>
+          <div style="background:rgba(14,21,38,0.9); border:1px solid rgba(6,182,212,0.3); border-radius:12px; padding:1.25rem;">
+            <div style="font-size:0.75rem; font-weight:700; text-transform:uppercase; color:#06b6d4;">Capital Preserved</div>
+            <div id="impact-val" style="font-size:1.85rem; font-weight:900; color:#ffffff; font-family:var(--font-mono); margin-top:0.25rem;">₹118.60 Cr</div>
+            <div style="font-size:0.75rem; color:#94a3b8; margin-top:0.25rem;">Direct inventory value saved</div>
+          </div>
+          <div style="background:rgba(14,21,38,0.9); border:1px solid rgba(99,102,241,0.3); border-radius:12px; padding:1.25rem;">
+            <div style="font-size:0.75rem; font-weight:700; text-transform:uppercase; color:#6366f1;">CO₂e Emissions Averted</div>
+            <div id="impact-co2" style="font-size:1.85rem; font-weight:900; color:#ffffff; font-family:var(--font-mono); margin-top:0.25rem;">43,425 MT</div>
+            <div style="font-size:0.75rem; color:#94a3b8; margin-top:0.25rem;">Methane from rot prevented</div>
+          </div>
+          <div style="background:rgba(14,21,38,0.9); border:1px solid rgba(245,158,11,0.3); border-radius:12px; padding:1.25rem;">
+            <div style="font-size:0.75rem; font-weight:700; text-transform:uppercase; color:#f59e0b;">Water Conserved</div>
+            <div id="impact-water" style="font-size:1.85rem; font-weight:900; color:#ffffff; font-family:var(--font-mono); margin-top:0.25rem;">57.90 Billion L</div>
+            <div style="font-size:0.75rem; color:#94a3b8; margin-top:0.25rem;">Embedded irrigation water</div>
+          </div>
+        </div>
+
+        <!-- Monthly Trend Chart Card -->
+        <div style="background:rgba(14,21,38,0.9); border:1px solid rgba(255,255,255,0.08); border-radius:14px; padding:1.25rem;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+            <h3 style="font-size:1.05rem; font-weight:700; color:#ffffff;">Monthly Wastage-Averted Trajectory (Metric Tonnes)</h3>
+            <span style="font-size:0.75rem; color:#10b981; font-weight:700;">● Continuous Upward Prevention</span>
+          </div>
+          <canvas id="impact-trend-canvas" style="width:100%; height:140px;"></canvas>
+        </div>
+
+        <!-- SDG Alignment -->
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:1rem;">
+          <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:1rem;">
+            <span style="font-size:0.7rem; font-weight:700; color:#f59e0b;">UN SDG 2</span>
+            <h4 style="font-size:0.95rem; font-weight:700; color:#ffffff; margin-top:2px;">Zero Hunger</h4>
+            <p style="font-size:0.78rem; color:#94a3b8; margin-top:4px;">Safeguards 48k+ tonnes staple grains entering food basket, feeding 321,600 households for a year.</p>
+          </div>
+          <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:1rem;">
+            <span style="font-size:0.7rem; font-weight:700; color:#10b981;">UN SDG 12</span>
+            <h4 style="font-size:0.95rem; font-weight:700; color:#ffffff; margin-top:2px;">Responsible Consumption</h4>
+            <p style="font-size:0.78rem; color:#94a3b8; margin-top:4px;">Achieves Target 12.3: Slashing post-harvest food grain wastage down from 8.5% to 0.38%.</p>
+          </div>
+          <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:1rem;">
+            <span style="font-size:0.7rem; font-weight:700; color:#06b6d4;">UN SDG 13</span>
+            <h4 style="font-size:0.95rem; font-weight:700; color:#ffffff; margin-top:2px;">Climate Action</h4>
+            <p style="font-size:0.78rem; color:#94a3b8; margin-top:4px;">Eliminates methane and nitrous oxide emissions released by decomposing anaerobic grain heaps.</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- =======================================================================
+         MODULE 7: STORAGE FACILITY DIRECTORY TABLE
+         ======================================================================= -->
+    <div id="view-directory" class="hud-module-pane" style="display:none; height:100%; overflow-y:auto; padding:1.5rem;">
+      <div style="max-width:1400px; margin:0 auto; display:flex; flex-direction:column; gap:1.25rem;">
+        <div style="display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:1rem;">
+          <div>
+            <div style="font-size:0.75rem; font-weight:700; color:#06b6d4; text-transform:uppercase; letter-spacing:0.06em;">Central Registry</div>
+            <h2 style="font-size:1.6rem; font-weight:800; color:#ffffff;">National Storage Facility Directory</h2>
+            <p style="color:#94a3b8; font-size:0.85rem; margin-top:0.25rem;">
+              All 60 facilities across India with real-time moisture telemetry, capacity utilization, and spoilage forecasts.
+            </p>
+          </div>
+          <div style="font-size:0.85rem; font-weight:700; color:#06b6d4; font-family:var(--font-mono);" id="dir-count-text">
+            Showing 60 facilities
+          </div>
+        </div>
+
+        <!-- Filter Controls Bar -->
+        <div style="background:rgba(14,21,38,0.9); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:0.85rem; display:flex; flex-wrap:wrap; gap:0.75rem; align-items:center;">
+          <div style="flex:2; min-width:240px;">
+            <input type="text" id="dir-search" class="input-search" placeholder="Search by name, city, state, crop, or ID..." />
+          </div>
+          <div style="flex:1; min-width:160px;">
+            <select id="dir-state" class="select-filter">
+              <option value="">All States</option>
+            </select>
+          </div>
+          <div style="flex:1; min-width:160px;">
+            <select id="dir-grain" class="select-filter">
+              <option value="">All Crop Types</option>
+              <option value="wheat">Wheat</option>
+              <option value="rice">Rice</option>
+              <option value="bajra">Bajra</option>
+              <option value="jowar">Jowar</option>
+              <option value="chana">Chana</option>
+              <option value="moong">Moong</option>
+            </select>
+          </div>
+          <div style="flex:1; min-width:160px;">
+            <select id="dir-risk" class="select-filter">
+              <option value="">All Risk Levels</option>
+              <option value="critical">Critical (&gt;15.5%)</option>
+              <option value="watch">Under Watch (13.5-15%)</option>
+              <option value="healthy">Healthy (&lt;13.5%)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Table Container -->
+        <div class="directory-card" style="overflow:hidden;">
+          <div style="overflow-x:auto;">
+            <table class="directory-table" id="directory-table">
+              <thead>
+                <tr>
+                  <th style="width:60px;">ID</th>
+                  <th>Facility Name</th>
+                  <th>Location</th>
+                  <th>Crop</th>
+                  <th>Stock / Capacity</th>
+                  <th>Moisture %</th>
+                  <th>Status</th>
+                  <th>Predicted Spoilage</th>
+                  <th style="text-align:right;">Action</th>
+                </tr>
+              </thead>
+              <tbody id="directory-tbody">
+                <tr>
+                  <td colspan="9" style="text-align:center; padding:3rem; color:#64748b;">
+                    Loading facilities directory...
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- =======================================================================
+         MODULE 8: SILO SENSOR MODEL (PHYSICS & AERATION SIMULATION)
+         ======================================================================= -->
+    <div id="view-silo" class="hud-module-pane" style="display:none; height:100%; overflow-y:auto; padding:1.5rem;">
+      <div style="max-width:1200px; margin:0 auto; display:flex; flex-direction:column; gap:1.25rem;">
+        <div style="display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:1rem;">
+          <div>
+            <div style="font-size:0.75rem; font-weight:700; color:#06b6d4; text-transform:uppercase; letter-spacing:0.06em;">Digital Twin Silo Simulation</div>
+            <h2 style="font-size:1.6rem; font-weight:800; color:#ffffff;">Smart Silo Physics & Stratification Model</h2>
+            <p style="color:#94a3b8; font-size:0.85rem; margin-top:0.25rem;">
+              Biological decay cutaway displaying multi-strata IoT probe cables (Headspace, Core, Plenum) and convection aeration currents.
+            </p>
+          </div>
+          <div style="font-size:0.82rem; color:#94a3b8;">
+            Aeration Fans: <strong id="silo-fan-status" style="color:#10b981;">Active (Auto-PID Cycle)</strong>
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1.2fr 1fr; gap:1.5rem; align-items:start;">
+          <!-- Left: 3D Digital Twin WebGL Stage & 2D Vector Cutaway -->
+          <div style="background:rgba(14,21,38,0.9); border:1px solid rgba(6,182,212,0.3); border-radius:14px; padding:1.25rem; box-shadow:var(--shadow-hud);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem; flex-wrap:wrap; gap:0.5rem;">
+              <div style="display:flex; align-items:center; gap:0.5rem;">
+                <span style="font-size:0.8rem; font-weight:700; color:#ffffff;">Digital Twin Silo #28 (Akola Mega Silo)</span>
+                <span class="hud-3d-indicator">REAL-TIME WEBGL</span>
+              </div>
+
+              <!-- 3D vs 2D Toggle & Fan Controls -->
+              <div style="display:flex; gap:0.4rem; align-items:center;">
+                <div style="display:flex; background:rgba(0,0,0,0.4); padding:2px; border-radius:6px; border:1px solid rgba(255,255,255,0.08);">
+                  <button id="silo-view-3d-btn" class="silo-hud-btn active" style="font-size:0.68rem; padding:2px 8px;">🌐 3D Orbit</button>
+                  <button id="silo-view-2d-btn" class="silo-hud-btn" style="font-size:0.68rem; padding:2px 8px;">📐 2D Flow</button>
+                </div>
+                <button id="toggle-fans-btn" class="btn btn-secondary" style="padding:0.3rem 0.65rem; font-size:0.72rem;">
+                  Toggle Fans
+                </button>
+              </div>
+            </div>
+
+            <!-- 3D WebGL Three.js Container -->
+            <div id="silo-3d-container" style="height:460px; border-radius:10px; overflow:hidden; background:#070b14; border:1px solid rgba(6,182,212,0.35); position:relative;">
+              <!-- Three.js renders in here -->
+            </div>
+
+            <!-- 2D Canvas Cutaway Container (Alternative view) -->
+            <div id="silo-2d-container" style="display:none; height:460px; border-radius:10px; overflow:hidden; background:#070b14; border:1px solid rgba(255,255,255,0.06); position:relative;">
+              <canvas id="silo-canvas" style="width:100%; height:100%;"></canvas>
+            </div>
+          </div>
+
+          <!-- Right: Diagnostic Details -->
+          <div style="display:flex; flex-direction:column; gap:1rem;">
+            <div style="background:rgba(14,21,38,0.9); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:1.25rem;">
+              <h3 style="font-size:1rem; font-weight:700; color:#ffffff; margin-bottom:0.5rem;">Multi-Strata Sensing Logic</h3>
+              <p style="font-size:0.82rem; color:#94a3b8; line-height:1.6;">
+                Grain in a commercial silo is a living respiratory ecosystem. When ambient air cools the metal roof at night, moisture migrates upwards, condensing on the top 1m layer. Microbiological respiration inside the biocenter generates concentrated heat pockets.
+              </p>
+            </div>
+
+            <div style="background:rgba(14,21,38,0.9); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:1.25rem;">
+              <h3 style="font-size:1rem; font-weight:700; color:#ffffff; margin-bottom:0.75rem;">Sensor Strata Telemetry</h3>
+              <div style="display:flex; flex-direction:column; gap:0.6rem; font-size:0.8rem;">
+                <div style="display:flex; justify-content:space-between; padding:0.6rem; background:rgba(255,255,255,0.03); border-radius:8px;">
+                  <span><strong>Surface Stratum (1m)</strong>: Headspace</span>
+                  <span style="color:#10b981; font-weight:700; font-family:var(--font-mono);">12.2% (26.4°C)</span>
+                </div>
+                <div style="display:flex; justify-content:space-between; padding:0.6rem; background:rgba(244,63,94,0.12); border:1px solid rgba(244,63,94,0.3); border-radius:8px;">
+                  <span><strong style="color:#f43f5e;">Core Biocenter (4m)</strong>: Respiration pocket</span>
+                  <span style="color:#f43f5e; font-weight:700; font-family:var(--font-mono);">16.8% (34.8°C) ⚠️</span>
+                </div>
+                <div style="display:flex; justify-content:space-between; padding:0.6rem; background:rgba(255,255,255,0.03); border-radius:8px;">
+                  <span><strong>Aeration Plenum (8m)</strong>: Floor Intake</span>
+                  <span style="color:#10b981; font-weight:700; font-family:var(--font-mono);">11.4% (22.0°C)</span>
+                </div>
+              </div>
+            </div>
+
+            <button id="silo-ask-copilot-btn" class="btn btn-primary" style="padding:0.75rem; font-size:0.85rem;">
+              <span>Consult Copilot for Unit #28 Akola Core Hot-Spot</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 9. 2-Month (60-Day) Predictive Spoilage Wastage Defense Grid -->
+    <div id="view-spoilage" class="hud-module-pane" style="display:none; height:100%; overflow-y:auto; padding:1.5rem;">
+      <div style="max-width:1440px; margin:0 auto; display:flex; flex-direction:column; gap:1.25rem;">
+        
+        <!-- Header Banner -->
+        <div class="spoilage-header-banner">
+          <div>
+            <div style="display:flex; align-items:center; gap:0.6rem; margin-bottom:0.35rem;">
+              <span style="font-size:1.4rem;">⏳</span>
+              <h2 style="font-size:1.35rem; font-weight:800; color:#ffffff; letter-spacing:-0.01em;">
+                2-Month (60-Day) Spoilage Wastage Predictor
+              </h2>
+              <span style="background:rgba(245,158,11,0.15); border:1px solid rgba(245,158,11,0.3); color:#f59e0b; font-size:0.68rem; font-weight:700; font-family:var(--font-mono); padding:2px 8px; border-radius:999px;">
+                WDRA / ASAE D535 STANDARD
+              </span>
+            </div>
+            <p style="font-size:0.82rem; color:#94a3b8; max-width:850px; line-height:1.5;">
+              Advanced predictive model calculating multi-strata grain dry matter loss (DML), microbial fungal proliferation (<em>Aspergillus / Penicillium</em>), and economic loss over a 60-day horizon calibrated strictly by facility stock arrival dates and psychrometric moisture telemetry.
+            </p>
+          </div>
+          <div style="display:flex; gap:0.6rem; align-items:center;">
+            <button id="spoilage-refresh-btn" class="btn btn-secondary" style="padding:0.5rem 0.85rem; font-size:0.75rem; display:flex; align-items:center; gap:0.4rem;">
+              <span>🔄 Refresh 60-Day Radar</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- National 60-Day Early Warning KPI Bar -->
+        <div class="spoilage-kpi-bar">
+          <div class="spoilage-kpi-card">
+            <div class="spoilage-kpi-lbl">Monitored Facilities</div>
+            <div class="spoilage-kpi-val" id="spoilage-kpi-monitored">60</div>
+            <div style="font-size:0.65rem; color:#64748b;">Pan-India Strategic Reserve</div>
+          </div>
+          <div class="spoilage-kpi-card" style="border-color:rgba(245,158,11,0.35);">
+            <div class="spoilage-kpi-lbl" style="color:#f59e0b;">Units Breaching in &le; 60 Days</div>
+            <div class="spoilage-kpi-val" id="spoilage-kpi-breaching-count" style="color:#f59e0b;">--</div>
+            <div style="font-size:0.65rem; color:#94a3b8;">High 2-Month Hazard Horizon</div>
+          </div>
+          <div class="spoilage-kpi-card" style="border-color:rgba(244,63,94,0.35);">
+            <div class="spoilage-kpi-lbl" style="color:#f43f5e;">Acute Breaches (&le; 30 Days)</div>
+            <div class="spoilage-kpi-val" id="spoilage-kpi-urgent-count" style="color:#f43f5e;">--</div>
+            <div style="font-size:0.65rem; color:#94a3b8;">Immediate Intervention Required</div>
+          </div>
+          <div class="spoilage-kpi-card">
+            <div class="spoilage-kpi-lbl">Projected 60-Day Wastage</div>
+            <div class="spoilage-kpi-val" id="spoilage-kpi-tonnes" style="color:#38bdf8;">-- T</div>
+            <div style="font-size:0.65rem; color:#64748b;">Physical Dry Matter & Bio Loss</div>
+          </div>
+          <div class="spoilage-kpi-card" style="border-color:rgba(239,68,68,0.35);">
+            <div class="spoilage-kpi-lbl" style="color:#ef4444;">Capital Value at Spoilage Risk</div>
+            <div class="spoilage-kpi-val" id="spoilage-kpi-rupees" style="color:#ef4444;">₹-- Cr</div>
+            <div style="font-size:0.65rem; color:#64748b;">Salvageable via Pre-Breach Routing</div>
+          </div>
+        </div>
+
+        <!-- Two-Column Interactive Simulation & Diagnostic Grid -->
+        <div class="spoilage-twocol-grid">
+          
+          <!-- Left: Simulation Parameters & Stock Arrival Calibration -->
+          <div class="spoilage-panel">
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,255,255,0.06); padding-bottom:0.6rem;">
+              <span style="font-size:0.85rem; font-weight:800; color:#ffffff; text-transform:uppercase; letter-spacing:0.02em;">
+                ⚙️ Facility Stock Simulator
+              </span>
+              <span style="font-size:0.68rem; color:#06b6d4; font-family:var(--font-mono);">ARRIVAL CALIBRATION</span>
+            </div>
+
+            <!-- Target Facility Dropdown -->
+            <div class="spoilage-form-group">
+              <label class="spoilage-form-label">
+                <span>Select Target Storage Facility</span>
+                <span id="sim-selected-unit-badge" style="color:#06b6d4; font-family:var(--font-mono);">Unit #28</span>
+              </label>
+              <select id="spoilage-sim-unit-select" style="background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.12); color:#ffffff; font-size:0.8rem; padding:0.5rem; border-radius:8px; outline:none;">
+                <option value="28">Unit #28 — Akola Cotton & Pulse Silo (Moong)</option>
+                <!-- Populated via JS -->
+              </select>
+            </div>
+
+            <!-- Stock Arrival Date & Presets -->
+            <div class="spoilage-form-group">
+              <label class="spoilage-form-label">
+                <span>Stock Arrival Date (Basis of Age)</span>
+                <span id="sim-days-stored-label" style="color:#38bdf8; font-family:var(--font-mono);">-- Days in Silo</span>
+              </label>
+              <input type="date" id="spoilage-sim-arrival-date" style="background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.12); color:#ffffff; font-size:0.82rem; font-family:var(--font-mono); padding:0.45rem 0.6rem; border-radius:8px; outline:none;" />
+              
+              <!-- Quick Arrival Date Shift Presets -->
+              <div style="display:flex; gap:0.35rem; flex-wrap:wrap; margin-top:0.25rem;">
+                <button type="button" class="spoilage-preset-btn" data-days="15">15d Ago (Fresh)</button>
+                <button type="button" class="spoilage-preset-btn" data-days="45">45d Ago (Mid-Life)</button>
+                <button type="button" class="spoilage-preset-btn" data-days="75">75d Ago (Aging)</button>
+                <button type="button" class="spoilage-preset-btn" data-days="105">105d Ago (Critical)</button>
+              </div>
+            </div>
+
+            <!-- Grain Commodity Selector -->
+            <div class="spoilage-form-group">
+              <label class="spoilage-form-label">
+                <span>Commodity Stored</span>
+                <span id="sim-safe-moisture-tag" style="color:#10b981;">Safe: &le;12.0%</span>
+              </label>
+              <select id="spoilage-sim-crop" style="background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.12); color:#ffffff; font-size:0.8rem; padding:0.45rem; border-radius:8px; outline:none;">
+                <option value="wheat">Wheat (Triticum aestivum) — Base 360d</option>
+                <option value="rice">Rice (Paddy/Parboiled) — Base 300d</option>
+                <option value="moong" selected>Moong / Green Gram — Base 240d</option>
+                <option value="chana">Chana / Desi Chickpeas — Base 270d</option>
+                <option value="bajra">Bajra / Pearl Millet — Base 210d</option>
+                <option value="jowar">Jowar / Sorghum — Base 240d</option>
+              </select>
+            </div>
+
+            <!-- Stock Volume (Tonnes) -->
+            <div class="spoilage-form-group">
+              <label class="spoilage-form-label">
+                <span>Stored Stock Volume</span>
+                <span id="sim-stock-display" style="color:#06b6d4; font-family:var(--font-mono);">6,400 Tonnes</span>
+              </label>
+              <input type="range" id="spoilage-sim-stock-slider" min="500" max="25000" step="100" value="6400" style="width:100%; accent-color:#06b6d4;" />
+            </div>
+
+            <!-- Moisture % Slider -->
+            <div class="spoilage-form-group">
+              <label class="spoilage-form-label">
+                <span>Intergranular Moisture Telemetry</span>
+                <span id="sim-moisture-display" style="color:#f59e0b; font-family:var(--font-mono);">16.8%</span>
+              </label>
+              <input type="range" id="spoilage-sim-moisture-slider" min="10.0" max="22.0" step="0.1" value="16.8" style="width:100%; accent-color:#f59e0b;" />
+            </div>
+
+            <!-- Core Grain Temperature -->
+            <div class="spoilage-form-group">
+              <label class="spoilage-form-label">
+                <span>Core Grain Bed Temp</span>
+                <span id="sim-temp-display" style="color:#f43f5e; font-family:var(--font-mono);">29.5°C</span>
+              </label>
+              <input type="range" id="spoilage-sim-temp-slider" min="15.0" max="42.0" step="0.5" value="29.5" style="width:100%; accent-color:#f43f5e;" />
+            </div>
+
+            <!-- Action Buttons -->
+            <div style="display:flex; flex-direction:column; gap:0.5rem; margin-top:0.4rem;">
+              <button id="spoilage-run-sim-btn" class="btn btn-primary" style="padding:0.75rem; font-size:0.85rem; display:flex; align-items:center; justify-content:center; gap:0.5rem;">
+                <span>⚡ Run 60-Day Projection & Gemini AI Audit</span>
+              </button>
+              <button id="spoilage-persist-arrival-btn" class="btn btn-secondary" style="padding:0.5rem; font-size:0.75rem; display:flex; align-items:center; justify-content:center; gap:0.4rem;">
+                <span>💾 Persist Arrival Date to Facility Database</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Right: Visual 60-Day Wastage Forecast & Trajectory -->
+          <div class="spoilage-panel">
+            
+            <!-- Hazard Status Banner -->
+            <div id="spoilage-hazard-banner" style="background:rgba(244,63,94,0.12); border:1px solid rgba(244,63,94,0.35); border-radius:12px; padding:1rem; display:flex; flex-direction:column; gap:0.4rem;">
+              <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;">
+                <div id="spoilage-badge" style="font-size:0.75rem; font-weight:800; font-family:var(--font-mono); padding:3px 10px; border-radius:999px; background:#ef4444; color:#ffffff;">
+                  🚨 2-MONTH HAZARD
+                </div>
+                <div style="font-size:0.75rem; color:#cbd5e1; font-family:var(--font-mono);">
+                  Breach Point: <strong id="spoilage-breach-date-display" style="color:#ffffff;">--</strong> (<span id="spoilage-days-to-breach-display">--</span>)
+                </div>
+              </div>
+              <div id="spoilage-urgency-headline" style="font-size:0.92rem; font-weight:700; color:#ffffff; line-height:1.4;">
+                Loading predictive forecast...
+              </div>
+            </div>
+
+            <!-- 60-Day Loss Summary Cards -->
+            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(140px, 1fr)); gap:0.65rem;">
+              <div style="background:rgba(4,9,20,0.6); border:1px solid rgba(255,255,255,0.06); border-radius:10px; padding:0.75rem;">
+                <div style="font-size:0.65rem; color:#94a3b8; text-transform:uppercase;">60-Day Wastage Tonnes</div>
+                <div id="spoilage-wastage-tonnes-val" style="font-size:1.25rem; font-weight:800; color:#f43f5e; font-family:var(--font-mono); margin-top:2px;">-- T</div>
+                <div id="spoilage-wastage-pct-val" style="font-size:0.65rem; color:#cbd5e1;">--% of current stock</div>
+              </div>
+              <div style="background:rgba(4,9,20,0.6); border:1px solid rgba(255,255,255,0.06); border-radius:10px; padding:0.75rem;">
+                <div style="font-size:0.65rem; color:#94a3b8; text-transform:uppercase;">60-Day Rupee Loss</div>
+                <div id="spoilage-loss-cr-val" style="font-size:1.25rem; font-weight:800; color:#ef4444; font-family:var(--font-mono); margin-top:2px;">₹-- Cr</div>
+                <div id="spoilage-loss-lakhs-val" style="font-size:0.65rem; color:#cbd5e1;">₹-- Lakhs write-off</div>
+              </div>
+              <div style="background:rgba(4,9,20,0.6); border:1px solid rgba(255,255,255,0.06); border-radius:10px; padding:0.75rem;">
+                <div style="font-size:0.65rem; color:#94a3b8; text-transform:uppercase;">Allowable Safe Life</div>
+                <div id="spoilage-safe-life-val" style="font-size:1.25rem; font-weight:800; color:#10b981; font-family:var(--font-mono); margin-top:2px;">-- Days</div>
+                <div id="spoilage-safe-life-sub" style="font-size:0.65rem; color:#cbd5e1;">Moisture & temp bound</div>
+              </div>
+              <div style="background:rgba(4,9,20,0.6); border:1px solid rgba(255,255,255,0.06); border-radius:10px; padding:0.75rem;">
+                <div style="font-size:0.65rem; color:#94a3b8; text-transform:uppercase;">Salvage Cutoff Date</div>
+                <div id="spoilage-salvage-deadline" style="font-size:1.05rem; font-weight:800; color:#fde68a; font-family:var(--font-mono); margin-top:4px;">--</div>
+                <div style="font-size:0.65rem; color:#cbd5e1;">Target pre-breach exit</div>
+              </div>
+            </div>
+
+            <!-- Forward Degradation Timeline Strip (Day 0, Day 15, Day 30, Day 45, Day 60) -->
+            <div>
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.35rem;">
+                <span style="font-size:0.78rem; font-weight:800; color:#ffffff; text-transform:uppercase; letter-spacing:0.02em;">
+                  📈 60-Day Forward Degradation Matrix
+                </span>
+                <span style="font-size:0.68rem; color:#06b6d4; font-family:var(--font-mono);">BIOMASS LOSS INTERVALS</span>
+              </div>
+              <div class="spoilage-timeline-strip" id="spoilage-full-timeline">
+                <!-- 5 Steps injected via JS -->
+              </div>
+            </div>
+
+            <!-- Gemini AI Agronomic Diagnosis Box -->
+            <div class="spoilage-diag-box" id="spoilage-ai-box">
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div style="display:flex; align-items:center; gap:0.5rem;">
+                  <span style="font-size:1rem;">🤖</span>
+                  <span style="font-size:0.82rem; font-weight:800; color:#ffffff;">Gemini 2.5 Flash Agronomic Audit</span>
+                </div>
+                <span style="font-size:0.65rem; color:#818cf8; font-family:var(--font-mono); background:rgba(99,102,241,0.15); padding:2px 8px; border-radius:999px;">
+                  gemini-3.8-flash (WDRA Trained)
+                </span>
+              </div>
+              <div id="spoilage-ai-mechanism" style="font-size:0.78rem; color:#cbd5e1; line-height:1.5;">
+                Analyzing multi-strata biological decay mechanism...
+              </div>
+              <div id="spoilage-ai-milestones-box" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(130px, 1fr)); gap:0.45rem; margin-top:0.25rem;">
+                <!-- Milestones injected via JS -->
+              </div>
+              <div id="spoilage-ai-directive" style="background:rgba(16,185,129,0.1); border-left:3px solid #10b981; padding:0.5rem 0.75rem; border-radius:0 6px 6px 0; font-size:0.75rem; color:#a7f3d0; line-height:1.4;">
+                Engineering Salvage Directive: Calculating...
+              </div>
+            </div>
+
+            <!-- Direct Tactical Interventions -->
+            <div style="display:flex; gap:0.6rem; flex-wrap:wrap;">
+              <button id="spoilage-dispatch-aeration-btn" class="btn btn-primary" style="flex:1; padding:0.65rem; font-size:0.78rem; display:flex; align-items:center; justify-content:center; gap:0.4rem;">
+                <span>⚡ Trigger Automated Aeration Sequence</span>
+              </button>
+              <button id="spoilage-route-buyer-btn" class="btn btn-secondary" style="flex:1; padding:0.65rem; font-size:0.78rem; display:flex; align-items:center; justify-content:center; gap:0.4rem;">
+                <span>🏭 Route to Value-Chain Dal / Flour Millers</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bottom Section: National 60-Day Early Warning Radar Table -->
+        <div class="spoilage-panel">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.6rem; border-bottom:1px solid rgba(255,255,255,0.06); padding-bottom:0.75rem;">
+            <div>
+              <span style="font-size:0.95rem; font-weight:800; color:#ffffff;">
+                🛡️ National 60-Day Spoilage Vulnerability Radar
+              </span>
+              <div style="font-size:0.72rem; color:#94a3b8; margin-top:2px;">
+                Storage facilities ordered by days remaining until dry matter loss breach based on stock arrival date.
+              </div>
+            </div>
+            <div style="display:flex; gap:0.4rem;">
+              <button class="btn btn-secondary active" id="filter-all-spoilage" style="padding:0.3rem 0.65rem; font-size:0.72rem;">All Monitored (60)</button>
+              <button class="btn btn-secondary" id="filter-breach-60d" style="padding:0.3rem 0.65rem; font-size:0.72rem; color:#f59e0b;">&le; 60 Days Only</button>
+              <button class="btn btn-secondary" id="filter-breach-30d" style="padding:0.3rem 0.65rem; font-size:0.72rem; color:#f43f5e;">&le; 30 Days Emergency</button>
+            </div>
+          </div>
+
+          <div style="overflow-x:auto;">
+            <table style="width:100%; border-collapse:collapse; font-size:0.78rem; text-align:left;">
+              <thead>
+                <tr style="border-bottom:1px solid rgba(255,255,255,0.1); color:#94a3b8; font-size:0.7rem; text-transform:uppercase;">
+                  <th style="padding:0.6rem;">Facility Name</th>
+                  <th style="padding:0.6rem;">Location</th>
+                  <th style="padding:0.6rem;">Crop</th>
+                  <th style="padding:0.6rem;">Stock Arrival</th>
+                  <th style="padding:0.6rem;">Days in Silo</th>
+                  <th style="padding:0.6rem;">Moisture</th>
+                  <th style="padding:0.6rem;">Breach Point</th>
+                  <th style="padding:0.6rem;">60-Day Wastage</th>
+                  <th style="padding:0.6rem;">Loss at Risk</th>
+                  <th style="padding:0.6rem; text-align:right;">Action</th>
+                </tr>
+              </thead>
+              <tbody id="spoilage-radar-tbody">
+                <!-- Populated via JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/futuristic-fx.js"></script>
+  <script src="js/silo-3d.js"></script>
+  <script src="js/scanner-3d.js"></script>
+  <script src="js/ticker.js"></script>
+  <script src="js/copilot.js"></script>
+  <script src="js/silo-animation.js"></script>
+  <script src="js/dashboard.js"></script>
+  <script src="js/spoilage-predictor.js"></script>
+  <script src="js/futuristic-app.js"></script>
+  <script src="js/moisture-chart.bundle.js"></script>
+
+  <!-- Master Dashboard Orchestration Script -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // 1. Initialize Futuristic FX (Audio Synthesizer, 3D Tilt, Ambient Particles)
+      if (window.AnnarakshaFX) {
+        try {
+          if (window.AnnarakshaFX.CyberMatrixBackground) {
+            new window.AnnarakshaFX.CyberMatrixBackground('cyber-matrix-bg');
+          }
+        } catch (e) {
+          console.warn('Matrix background init error:', e);
+        }
+        if (window.AnnarakshaFX.Perspective3DTilt) {
+          window.AnnarakshaFX.Perspective3DTilt.init();
+        }
+      }
+
+      // Audio Toggle Button
+      const audioBtn = document.getElementById('audio-toggle-btn');
+      const audioIcon = document.getElementById('audio-icon');
+      const audioLabel = document.getElementById('audio-label');
+      if (audioBtn && window.AnnarakshaFX) {
+        audioBtn.addEventListener('click', () => {
+          const isMuted = window.AnnarakshaFX.Synthesizer.toggleMute();
+          if (isMuted) {
+            if (audioIcon) audioIcon.textContent = '🔇';
+            if (audioLabel) audioLabel.textContent = 'SFX OFF';
+            audioBtn.classList.add('muted');
+          } else {
+            if (audioIcon) audioIcon.textContent = '🔊';
+            if (audioLabel) audioLabel.textContent = 'SFX ON';
+            audioBtn.classList.remove('muted');
+            window.AnnarakshaFX.Synthesizer.playNotification();
+          }
+        });
+      }
+
+      // Holographic Brand Showcase Triggers
+      const holoShowcaseBtn = document.getElementById('holo-showcase-btn');
+      const brandHeaderTrigger = document.getElementById('brand-header-trigger');
+      if (window.AnnarakshaFX && window.AnnarakshaFX.HolographicBrandShowcase) {
+        if (holoShowcaseBtn) {
+          holoShowcaseBtn.addEventListener('click', () => window.AnnarakshaFX.HolographicBrandShowcase.open());
+        }
+        if (brandHeaderTrigger) {
+          brandHeaderTrigger.addEventListener('click', () => window.AnnarakshaFX.HolographicBrandShowcase.open());
+        }
+      }
+
+      // 2. Initialize Dashboard Engine
+      if (window.AnnarakshaDashboard) {
+        new window.AnnarakshaDashboard();
+      }
+
+      // 3. Initialize Futuristic Console Engine
+      if (window.FuturisticConsole) {
+        new window.FuturisticConsole();
+      }
+
+      // 4. Initialize 3D Silo Visualizer (Three.js WebGL Digital Twin)
+      let silo3D = null;
+      if (window.Silo3DVisualizer && document.getElementById('silo-3d-container')) {
+        silo3D = new window.Silo3DVisualizer('silo-3d-container');
+      }
+
+      // Fallback 2D Silo Visualizer
+      let silo2D = null;
+      if (window.SiloVisualizer && document.getElementById('silo-canvas')) {
+        silo2D = new window.SiloVisualizer('silo-canvas');
+      }
+
+      // Silo 3D vs 2D Toggle
+      const siloView3DBtn = document.getElementById('silo-view-3d-btn');
+      const siloView2DBtn = document.getElementById('silo-view-2d-btn');
+      const silo3DBox = document.getElementById('silo-3d-container');
+      const silo2DBox = document.getElementById('silo-2d-container');
+
+      if (siloView3DBtn && siloView2DBtn) {
+        siloView3DBtn.addEventListener('click', () => {
+          siloView3DBtn.classList.add('active');
+          siloView2DBtn.classList.remove('active');
+          if (silo3DBox) silo3DBox.style.display = 'block';
+          if (silo2DBox) silo2DBox.style.display = 'none';
+          if (silo3D) silo3D.onWindowResize();
+          if (window.AnnarakshaFX) window.AnnarakshaFX.Synthesizer.playChirp();
+        });
+
+        siloView2DBtn.addEventListener('click', () => {
+          siloView2DBtn.classList.add('active');
+          siloView3DBtn.classList.remove('active');
+          if (silo3DBox) silo3DBox.style.display = 'none';
+          if (silo2DBox) silo2DBox.style.display = 'block';
+          if (window.AnnarakshaFX) window.AnnarakshaFX.Synthesizer.playChirp();
+        });
+      }
+
+      const toggleFansBtn = document.getElementById('toggle-fans-btn');
+      if (toggleFansBtn) {
+        toggleFansBtn.addEventListener('click', () => {
+          const active = silo3D ? silo3D.toggleFans() : (silo2D ? (silo2D.aerationActive = !silo2D.aerationActive) : false);
+          const statusText = document.getElementById('silo-fan-status');
+          if (statusText) {
+            statusText.innerText = active ? 'Active (Auto-PID Cycle)' : 'Standby (Click to run)';
+            statusText.style.color = active ? '#10b981' : '#f59e0b';
+          }
+          if (window.AnnarakshaFX) {
+            if (active) window.AnnarakshaFX.Synthesizer.playAerationHum();
+            else window.AnnarakshaFX.Synthesizer.playChirp();
+          }
+        });
+      }
+
+      const siloAskBtn = document.getElementById('silo-ask-copilot-btn');
+      if (siloAskBtn) {
+        siloAskBtn.addEventListener('click', () => {
+          const prompt = "Provide an immediate aeration and temperature dissipation plan for Unit #28 (Akola Core Silo) with 16.8% moisture and 34.8°C thermal respiration.";
+          window.dispatchEvent(new CustomEvent('annaraksha:ask-copilot', { detail: { prompt } }));
+        });
+      }
+
+      // 5. Initialize 3D Grain Scanner (Three.js WebGL Holographic Kernel)
+      let scanner3D = null;
+      if (window.GrainScanner3D && document.getElementById('scanner-3d-box')) {
+        scanner3D = new window.GrainScanner3D('scanner-3d-box');
+      }
+
+      const scannerMode2DBtn = document.getElementById('scanner-mode-2d-btn');
+      const scannerMode3DBtn = document.getElementById('scanner-mode-3d-btn');
+      const scanner2DBox = document.getElementById('scanner-viewport-box');
+      const scanner3DBox = document.getElementById('scanner-3d-box');
+
+      if (scannerMode2DBtn && scannerMode3DBtn) {
+        scannerMode2DBtn.addEventListener('click', () => {
+          scannerMode2DBtn.classList.add('active');
+          scannerMode3DBtn.classList.remove('active');
+          if (scanner2DBox) scanner2DBox.style.display = 'block';
+          if (scanner3DBox) scanner3DBox.style.display = 'none';
+          if (window.AnnarakshaFX) window.AnnarakshaFX.Synthesizer.playChirp();
+        });
+
+        scannerMode3DBtn.addEventListener('click', () => {
+          scannerMode3DBtn.classList.add('active');
+          scannerMode2DBtn.classList.remove('active');
+          if (scanner2DBox) scanner2DBox.style.display = 'none';
+          if (scanner3DBox) scanner3DBox.style.display = 'block';
+          if (scanner3D) scanner3D.onWindowResize();
+          if (window.AnnarakshaFX) {
+            window.AnnarakshaFX.Synthesizer.playHologramSweep();
+          }
+        });
+      }
+
+      // Sync Scanner Preset with 3D Hologram Mesh
+      document.querySelectorAll('.scanner-preset-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const preset = btn.getAttribute('data-preset');
+          if (scanner3D) {
+            scanner3D.loadPreset(preset);
+          }
+        });
+      });
+
+      // 6. Directory View Table Population & Filtering
+      let directoryUnits = [];
+      const dirTbody = document.getElementById('directory-tbody');
+      const dirSearch = document.getElementById('dir-search');
+      const dirState = document.getElementById('dir-state');
+      const dirGrain = document.getElementById('dir-grain');
+      const dirRisk = document.getElementById('dir-risk');
+      const dirCount = document.getElementById('dir-count-text');
+
+      async function initDirectory() {
+        try {
+          const res = await fetch('/api/units');
+          const json = await res.json();
+          if (json.status === 'success' && Array.isArray(json.data)) {
+            directoryUnits = json.data;
+
+            // Populate states in directory dropdown
+            const states = Array.from(new Set(directoryUnits.map(u => u.state))).sort();
+            states.forEach(st => {
+              const opt = document.createElement('option');
+              opt.value = st;
+              opt.textContent = st;
+              dirState.appendChild(opt);
+            });
+
+            renderDirectoryTable(directoryUnits);
+          }
+        } catch (err) {
+          if (dirTbody) dirTbody.innerHTML = `<tr><td colspan="9" style="text-align:center; padding:2rem; color:#f43f5e;">Error loading data: ${err.message}</td></tr>`;
+        }
+      }
+
+      function filterDirectory() {
+        const q = dirSearch.value.trim().toLowerCase();
+        const st = dirState.value;
+        const gr = dirGrain.value.toLowerCase();
+        const rk = dirRisk.value.toLowerCase();
+
+        const filtered = directoryUnits.filter(u => {
+          if (st && u.state !== st) return false;
+          if (gr && u.grain_type.toLowerCase() !== gr) return false;
+          if (rk && u.risk_level.toLowerCase() !== rk) return false;
+          if (q) {
+            const match = u.name.toLowerCase().includes(q) ||
+                          u.city.toLowerCase().includes(q) ||
+                          u.state.toLowerCase().includes(q) ||
+                          u.grain_type.toLowerCase().includes(q) ||
+                          ('unit #' + u.id).includes(q);
+            if (!match) return false;
+          }
+          return true;
+        });
+
+        renderDirectoryTable(filtered);
+      }
+
+      if (dirSearch) dirSearch.addEventListener('input', filterDirectory);
+      if (dirState) dirState.addEventListener('change', filterDirectory);
+      if (dirGrain) dirGrain.addEventListener('change', filterDirectory);
+      if (dirRisk) dirRisk.addEventListener('change', filterDirectory);
+
+      function renderDirectoryTable(units) {
+        if (!dirTbody) return;
+        if (dirCount) {
+          dirCount.textContent = `Showing ${units.length} of ${directoryUnits.length} facilities`;
+        }
+
+        if (units.length === 0) {
+          dirTbody.innerHTML = `<tr><td colspan="9" style="text-align:center; padding:3rem; color:#64748b;">No facilities match the selected filters.</td></tr>`;
+          return;
+        }
+
+        const html = units.map(u => {
+          let riskPill = '';
+          if (u.risk_level === 'critical') {
+            riskPill = '<span class="risk-pill risk-pill-critical"><span class="ticker-pulse"></span> Critical</span>';
+          } else if (u.risk_level === 'watch') {
+            riskPill = '<span class="risk-pill risk-pill-watch">Watch</span>';
+          } else {
+            riskPill = '<span class="risk-pill risk-pill-healthy">Healthy</span>';
+          }
+
+          const moistureColor = u.moisture_pct >= 15.5 ? '#f43f5e' : (u.moisture_pct >= 13.5 ? '#f59e0b' : '#10b981');
+
+          return `
+            <tr>
+              <td style="font-weight:700; font-family:var(--font-mono); color:#06b6d4;">#${u.id}</td>
+              <td style="font-weight:700; color:#ffffff;">${u.name}</td>
+              <td>${u.city}, <span style="color:#94a3b8;">${u.state}</span></td>
+              <td><strong style="text-transform:capitalize; color:#06b6d4;">${u.grain_type}</strong></td>
+              <td>
+                <div><strong style="color:#ffffff;">${u.current_stock_tonnes.toLocaleString()} T</strong></div>
+                <div style="font-size:0.7rem; color:#94a3b8;">of ${u.capacity_tonnes.toLocaleString()} T (${Math.round(u.current_stock_tonnes / u.capacity_tonnes * 100)}%)</div>
+              </td>
+              <td>
+                <span style="font-weight:800; font-family:var(--font-mono); color:${moistureColor};">${u.moisture_pct}%</span>
+              </td>
+              <td>${riskPill}</td>
+              <td>
+                ${u.predicted_spoilage_date ? `<span style="font-weight:600; color:#f59e0b;">${u.predicted_spoilage_date}</span>` : '<span style="color:#10b981; font-size:0.78rem;">Safe (&gt;180d)</span>'}
+              </td>
+              <td style="text-align:right;">
+                <button class="btn btn-secondary inspect-btn" data-unit-id="${u.id}" style="padding:0.35rem 0.75rem; font-size:0.75rem;">
+                  Inspect &rarr;
+                </button>
+              </td>
+            </tr>
+          `;
+        }).join('');
+
+        dirTbody.innerHTML = html;
+
+        // Inspect button jumps back to Operations Grid tab
+        dirTbody.querySelectorAll('.inspect-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const unitId = parseInt(btn.getAttribute('data-unit-id'), 10);
+            const gridTabBtn = document.querySelector('.hud-tab-btn[data-target="view-grid"]');
+            if (gridTabBtn) gridTabBtn.click();
+            if (window.dashboardEngine) {
+              window.dashboardEngine.selectUnitById(unitId);
+            }
+          });
+        });
+      }
+
+      initDirectory();
+    });
+  </script>
+
+  <!-- =========================================================================
+       MODAL 1: LIVE HARDWARE CAMERA VIEWFINDER MODAL
+       ========================================================================= -->
+  <div id="grain-camera-modal" class="grain-camera-modal-backdrop" role="dialog" aria-modal="true" aria-label="Grain Camera Viewfinder">
+    <div class="grain-camera-viewfinder">
+      <!-- Camera Viewfinder Header -->
+      <div style="padding:0.75rem 1rem; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,255,255,0.1); background:rgba(15,23,42,0.8);">
+        <div style="display:flex; align-items:center; gap:0.5rem;">
+          <span style="font-size:1rem;">📸</span>
+          <div>
+            <div style="font-size:0.82rem; font-weight:700; color:#ffffff;">Optical NIR Grain Camera</div>
+            <div style="font-size:0.65rem; color:#38bdf8; font-family:var(--font-mono);">Hardware Video Stream Active</div>
+          </div>
+        </div>
+        <button id="grain-camera-close-btn" class="drawer-close-btn" aria-label="Close camera">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18 6 6 18M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Live Video Feed Container -->
+      <div class="camera-video-container">
+        <video id="grain-camera-video" playsinline autoplay muted></video>
+        <div class="camera-reticle"></div>
+        <div id="grain-camera-status" style="position:absolute; bottom:10px; left:12px; right:12px; font-size:0.7rem; color:#f8fafc; background:rgba(0,0,0,0.65); padding:4px 8px; border-radius:4px; font-family:var(--font-mono); text-align:center;">
+          Align grain kernels flat on tray. Avoid glare.
+        </div>
+      </div>
+
+      <!-- Camera Action Controls -->
+      <div style="padding:0.85rem 1rem; display:flex; justify-content:space-between; align-items:center; background:rgba(10,16,30,0.95); gap:0.75rem;">
+        <button id="grain-camera-switch-btn" class="btn btn-secondary" style="padding:0.55rem 0.85rem; font-size:0.78rem;">
+          🔄 Switch Lens
+        </button>
+        <button id="grain-camera-capture-btn" class="btn btn-primary" style="flex:1; padding:0.65rem 1.25rem; font-size:0.85rem; display:flex; align-items:center; justify-content:center; gap:0.5rem;">
+          <span>⚡ Snap Frame &amp; Analyze</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       MODAL 2: OFFICIAL DIGITAL QUALITY GATE-PASS & WDRA / e-WQR CERTIFICATE
+       ========================================================================= -->
+  <div id="official-inspection-certificate-modal" class="cert-modal-backdrop" role="dialog" aria-modal="true" aria-label="Official Grain Quality Certificate">
+    <div class="cert-paper">
+      <div class="cert-paper-inner">
+        <!-- Security Watermark -->
+        <div class="cert-watermark">WDRA &bull; FSSAI</div>
+
+        <!-- Official Header Bar -->
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; border-bottom:2px solid #0284c7; padding-bottom:1rem; margin-bottom:1.25rem;">
+          <div style="display:flex; gap:1rem; align-items:center;">
+            <div style="width:48px; height:48px; border-radius:8px; background:#0284c7; display:flex; align-items:center; justify-content:center; color:#ffffff; font-weight:900; font-size:1.4rem;">
+              🌾
+            </div>
+            <div>
+              <div style="font-size:0.68rem; font-weight:700; color:#64748b; letter-spacing:0.08em; text-transform:uppercase;">Government of India &bull; WDRA Registered</div>
+              <h2 style="font-size:1.15rem; font-weight:800; color:#0f172a; margin:2px 0 0; line-height:1.2;">NATIONAL GRAIN PRESERVATION DEFENSE GRID</h2>
+              <div style="font-size:0.75rem; color:#0284c7; font-weight:600;">Electronic Warehouse Quality Receipt (e-WQR) &amp; Mandi Gate-Pass</div>
+            </div>
+          </div>
+
+          <!-- Print & Close Controls (Hidden when printing) -->
+          <div class="cert-no-print" style="display:flex; gap:0.5rem; align-items:center;">
+            <button id="cert-print-btn" class="btn btn-primary" style="padding:0.45rem 0.9rem; font-size:0.75rem; background:#0284c7; border-color:#0284c7; color:#fff; display:flex; align-items:center; gap:0.35rem;">
+              <span>🖨️ Print / Save PDF</span>
+            </button>
+            <button id="cert-close-btn" style="background:#f1f5f9; border:1px solid #cbd5e1; border-radius:6px; width:32px; height:32px; display:flex; align-items:center; justify-content:center; color:#475569; cursor:pointer;" aria-label="Close certificate">
+              &times;
+            </button>
+          </div>
+        </div>
+
+        <!-- Certificate Metadata Grid -->
+        <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:0.85rem; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:0.85rem 1rem; font-size:0.78rem;">
+          <div>
+            <div style="font-size:0.65rem; color:#64748b; text-transform:uppercase; font-weight:600;">Batch Passport ID</div>
+            <div id="cert-batch-id" style="font-weight:700; color:#0f172a; font-family:var(--font-mono); margin-top:2px;">AGR-SCAN-88421</div>
+          </div>
+          <div>
+            <div style="font-size:0.65rem; color:#64748b; text-transform:uppercase; font-weight:600;">Inspection Timestamp</div>
+            <div id="cert-timestamp" style="font-weight:600; color:#334155; margin-top:2px;">17-Sep-2026 15:42 IST</div>
+          </div>
+          <div>
+            <div style="font-size:0.65rem; color:#64748b; text-transform:uppercase; font-weight:600;">Facility / Terminal</div>
+            <div id="cert-facility-name" style="font-weight:700; color:#0f172a; margin-top:2px;">Indore Mandi Terminal Gate #4</div>
+          </div>
+          <div>
+            <div style="font-size:0.65rem; color:#64748b; text-transform:uppercase; font-weight:600;">Commodity &amp; Cultivar</div>
+            <div id="cert-grain-type" style="font-weight:700; color:#0284c7; margin-top:2px;">Wheat (Kalyan Sona)</div>
+          </div>
+          <div>
+            <div style="font-size:0.65rem; color:#64748b; text-transform:uppercase; font-weight:600;">Farmer / Depositor</div>
+            <div id="cert-farmer-name" style="font-weight:600; color:#334155; margin-top:2px;">Rameshwar Dayal Patidar</div>
+          </div>
+          <div>
+            <div style="font-size:0.65rem; color:#64748b; text-transform:uppercase; font-weight:600;">Vehicle / Gate RFID</div>
+            <div id="cert-vehicle-no" style="font-weight:700; font-family:var(--font-mono); color:#0f172a; margin-top:2px;">MP-09-GA-4482</div>
+          </div>
+        </div>
+
+        <!-- Official Quality Breakdown Table -->
+        <table class="cert-table">
+          <thead>
+            <tr>
+              <th>Inspection Parameter</th>
+              <th>Laboratory Value</th>
+              <th>BIS / AGMARK Tolerance</th>
+              <th>Compliance State</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Moisture Content (% wet-basis)</strong></td>
+              <td id="cert-moisture" style="font-weight:700; font-family:var(--font-mono);">15.9%</td>
+              <td>&le; 12.0% (Safe Buffer)</td>
+              <td><span id="cert-moisture-tag" style="background:#fee2e2; color:#991b1b; padding:2px 8px; border-radius:4px; font-weight:700; font-size:0.72rem;">EXCEEDS THRESHOLD</span></td>
+            </tr>
+            <tr>
+              <td><strong>Broken &amp; Shriveled Kernels</strong></td>
+              <td id="cert-broken" style="font-weight:700; font-family:var(--font-mono);">4.8%</td>
+              <td>&le; 6.0%</td>
+              <td><span style="background:#dcfce7; color:#166534; padding:2px 8px; border-radius:4px; font-weight:700; font-size:0.72rem;">WITHIN LIMITS</span></td>
+            </tr>
+            <tr>
+              <td><strong>Discolored / Damaged Grains</strong></td>
+              <td id="cert-discolored" style="font-weight:700; font-family:var(--font-mono);">7.2%</td>
+              <td>&le; 4.0%</td>
+              <td><span id="cert-discolor-tag" style="background:#fef3c7; color:#92400e; padding:2px 8px; border-radius:4px; font-weight:700; font-size:0.72rem;">WATCH LEVEL</span></td>
+            </tr>
+            <tr>
+              <td><strong>Insect / Weevil Infestation Count</strong></td>
+              <td id="cert-insects" style="font-weight:700; font-family:var(--font-mono);">3 units / kg</td>
+              <td>0 living weevils</td>
+              <td><span id="cert-insects-tag" style="background:#fee2e2; color:#991b1b; padding:2px 8px; border-radius:4px; font-weight:700; font-size:0.72rem;">FUMIGATION REQ.</span></td>
+            </tr>
+            <tr>
+              <td><strong>Foreign Matter (Inorganic/Organic)</strong></td>
+              <td id="cert-foreign" style="font-weight:700; font-family:var(--font-mono);">1.4%</td>
+              <td>&le; 1.0%</td>
+              <td><span style="background:#fef3c7; color:#92400e; padding:2px 8px; border-radius:4px; font-weight:700; font-size:0.72rem;">SCREENING REQ.</span></td>
+            </tr>
+            <tr>
+              <td><strong>Days to Spoilage (DTS Forecast)</strong></td>
+              <td id="cert-dts" style="font-weight:700; font-family:var(--font-mono); color:#b91c1c;">4 Days DTS</td>
+              <td>&gt; 90 Days Expected</td>
+              <td><span style="background:#fee2e2; color:#991b1b; padding:2px 8px; border-radius:4px; font-weight:700; font-size:0.72rem;">CRITICAL TIMELINE</span></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- Prescribed Action & Official Grade Stamp Section -->
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:1.25rem; gap:1.5rem;">
+          <div style="flex:1;">
+            <div style="font-size:0.7rem; font-weight:700; color:#64748b; text-transform:uppercase;">Mandatory Gate Preservation Directive</div>
+            <div id="cert-directive" style="font-size:0.78rem; color:#1e293b; background:#f1f5f9; padding:0.6rem 0.85rem; border-radius:6px; margin-top:4px; border-left:3px solid #0284c7; line-height:1.45;">
+              Route grain to Mobile Dryers for 4.5h hot-air drying at 48°C. Do not store in hermetic bags without moisture reduction.
+            </div>
+          </div>
+
+          <div class="cert-stamp-badge">
+            <span style="font-size:0.62rem; font-weight:800; letter-spacing:0.06em;">OFFICIAL RATING</span>
+            <span id="cert-grade-text" style="font-size:1.15rem; font-weight:900; color:#0369a1; line-height:1.2; margin:2px 0;">GRADE B</span>
+            <span style="font-size:0.6rem; color:#64748b;">IMMEDIATE MILLING</span>
+          </div>
+        </div>
+
+        <!-- Cryptographic QR & Sign-Off Footer -->
+        <div style="display:flex; justify-content:space-between; align-items:flex-end; border-top:1px solid #e2e8f0; padding-top:1rem; margin-top:1.25rem;">
+          <div style="display:flex; gap:0.85rem; align-items:center;">
+            <!-- Real SVG QR Matrix Code -->
+            <svg id="cert-qr-svg" width="64" height="64" viewBox="0 0 100 100" style="background:#fff; border:1px solid #cbd5e1; border-radius:4px; padding:2px;">
+              <rect x="5" y="5" width="30" height="30" fill="#0f172a" />
+              <rect x="10" y="10" width="20" height="20" fill="#ffffff" />
+              <rect x="15" y="15" width="10" height="10" fill="#0f172a" />
+              <rect x="65" y="5" width="30" height="30" fill="#0f172a" />
+              <rect x="70" y="10" width="20" height="20" fill="#ffffff" />
+              <rect x="75" y="15" width="10" height="10" fill="#0f172a" />
+              <rect x="5" y="65" width="30" height="30" fill="#0f172a" />
+              <rect x="10" y="70" width="20" height="20" fill="#ffffff" />
+              <rect x="15" y="75" width="10" height="10" fill="#0f172a" />
+              <!-- Data dots pattern -->
+              <rect x="45" y="10" width="10" height="10" fill="#0f172a" />
+              <rect x="45" y="30" width="10" height="10" fill="#0f172a" />
+              <rect x="45" y="50" width="10" height="10" fill="#0f172a" />
+              <rect x="45" y="70" width="10" height="10" fill="#0f172a" />
+              <rect x="65" y="45" width="10" height="10" fill="#0f172a" />
+              <rect x="85" y="45" width="10" height="10" fill="#0f172a" />
+              <rect x="65" y="65" width="10" height="10" fill="#0f172a" />
+              <rect x="80" y="75" width="15" height="15" fill="#0f172a" />
+            </svg>
+            <div>
+              <div style="font-size:0.65rem; font-family:var(--font-mono); color:#64748b;">SHA-256 DIGITAL VERIFICATION HASH:</div>
+              <div id="cert-hash" style="font-size:0.62rem; font-family:var(--font-mono); color:#0284c7; word-break:break-all; max-width:320px;">
+                0x7F9B...4C82E3019FA82C5D190B381A
+              </div>
+              <div style="font-size:0.62rem; color:#94a3b8; margin-top:2px;">Scan QR to verify on WDRA National Registry</div>
+            </div>
+          </div>
+
+          <div style="text-align:right;">
+            <div style="font-size:0.75rem; font-weight:800; color:#0f172a; text-transform:uppercase;">ANNARAKSHA AI TELEMETRY ENGINE</div>
+            <div style="font-size:0.65rem; color:#64748b;">Autonomous Mandi Quality Ingestion System</div>
+            <div style="font-size:0.65rem; font-weight:700; color:#16a34a; margin-top:2px;">● DIGITALLY AUTHENTICATED &amp; SIGNED</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</body>
+</html>
