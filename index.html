@@ -16,26 +16,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
   
   <script>
-    // Universal API base resolver: if hosted statically on a custom domain (e.g. ServerByte),
-    // automatically proxy API calls to the live Cloud Run backend so AI Copilot, weather, and live data work!
-    window.ANNARAKSHA_API_BASE = (function() {
-      if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname.includes('run.app')) {
-        return '';
-      }
-      return 'https://ais-pre-n4m7vz2ayebu74wch4aisl-926414202659.asia-southeast1.run.app';
-    })();
-
-    // Intercept native fetch so all relative /api/ calls automatically route to Cloud Run when hosted statically
-    (function() {
-      const _origFetch = window.fetch;
-      window.fetch = function(input, init) {
-        if (typeof input === 'string' && input.startsWith('/api/')) {
-          const base = window.ANNARAKSHA_API_BASE || '';
-          return _origFetch(base + input, init);
-        }
-        return _origFetch(input, init);
-      };
-    })();
+    // API routes are served by the PHP host on the same origin.
+    window.ANNARAKSHA_API_BASE = '';
 
     // Suppress unhandled Google Maps billing/auth errors to prevent unhandled runtime errors
     (function() {
@@ -1534,7 +1516,7 @@
 
       async function initDirectory() {
         try {
-          const res = await fetch('/api/units');
+          const res = await fetch('/api/units.php');
           const json = await res.json();
           if (json.status === 'success' && Array.isArray(json.data)) {
             directoryUnits = json.data;

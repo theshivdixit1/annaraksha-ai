@@ -113,7 +113,7 @@ class FuturisticConsole {
 
   async initIngestionFeeds() {
     try {
-      const res = await fetch('/api/ingestion');
+      const res = await fetch('/api/ingestion.php');
       const json = await res.json();
       if (json.status === 'success' && json.data) {
         this.renderIngestionFeeds(json.data);
@@ -125,7 +125,7 @@ class FuturisticConsole {
     // Periodic feed refresh
     setInterval(async () => {
       try {
-        const res = await fetch('/api/ingestion');
+        const res = await fetch('/api/ingestion.php');
         const json = await res.json();
         if (json.status === 'success' && json.data) {
           this.renderIngestionFeeds(json.data);
@@ -434,7 +434,7 @@ class FuturisticConsole {
     }
 
     try {
-      const res = await fetch('/api/scan', {
+      const res = await fetch('/api/scan.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -552,7 +552,7 @@ class FuturisticConsole {
   // =========================================================================
   async initWorkOrders() {
     try {
-      const res = await fetch('/api/workorders');
+      const res = await fetch('/api/workorders.php');
       const json = await res.json();
       if (json.status === 'success' && json.data) {
         this.renderWorkOrders(json.data);
@@ -623,7 +623,7 @@ class FuturisticConsole {
         btn.textContent = 'Dispatched to PLC...';
         btn.style.opacity = '0.7';
         try {
-          await fetch('/api/workorders', {
+          await fetch('/api/workorders.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ action: 'execute', order_id: id })
@@ -640,7 +640,7 @@ class FuturisticConsole {
   // =========================================================================
   async initValueChain() {
     try {
-      const res = await fetch('/api/valuechain');
+      const res = await fetch('/api/valuechain.php');
       const json = await res.json();
       if (json.status === 'success' && json.data) {
         this.renderValueChain(json.data);
@@ -708,7 +708,7 @@ class FuturisticConsole {
   // =========================================================================
   async initLogistics() {
     try {
-      const res = await fetch('/api/logistics');
+      const res = await fetch('/api/logistics.php');
       const json = await res.json();
       if (json.status === 'success' && json.data) {
         this.renderLogistics(json.data);
@@ -748,7 +748,7 @@ class FuturisticConsole {
   // =========================================================================
   async initImpact() {
     try {
-      const res = await fetch('/api/impact');
+      const res = await fetch('/api/impact.php');
       const json = await res.json();
       if (json.status === 'success' && json.data) {
         this.renderImpact(json.data);

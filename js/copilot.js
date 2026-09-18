@@ -246,7 +246,7 @@
 
         try {
           const t0 = performance.now();
-          const res = await fetch('/api/copilot/test');
+          const res = await fetch('/api/copilot-test.php');
           const elapsed = Math.round(performance.now() - t0);
           const data = await res.json();
           console.log('[Copilot:Diag] Diagnostic response received:', { status: data.status, latency_ms: data.latency_ms, roundtrip_ms: elapsed });
@@ -328,7 +328,7 @@
         if (confirm('Start a fresh conversation thread?')) {
           console.log(`[Copilot:Session] Clearing conversation history for session ${sessionId}...`);
           try {
-            await fetch('/api/copilot/history', {
+            await fetch('/api/copilot-history.php', {
               method: 'DELETE',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ session_id: sessionId })
@@ -410,7 +410,7 @@
       if (!chat || chat.children.length > 1) return;
       try {
         console.log(`[Copilot:History] Fetching history for session ${sessionId}...`);
-        const res = await fetch(`/api/copilot/history?session_id=${encodeURIComponent(sessionId)}`);
+        const res = await fetch(`/api/copilot-history.php?session_id=${encodeURIComponent(sessionId)}`);
         const data = await res.json();
         if (data.status === 'success' && Array.isArray(data.messages) && data.messages.length > 0) {
           console.log(`[Copilot:History] Loaded ${data.messages.length} previous messages from server.`);
@@ -459,7 +459,7 @@
       console.log(`[Copilot:Client:2/6] 📡 Request Dispatched -> POST /api/copilot (${serialized.length} bytes)`);
 
       try {
-        const res = await fetch('/api/copilot', {
+        const res = await fetch('/api/copilot.php', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
