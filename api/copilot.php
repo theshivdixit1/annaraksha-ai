@@ -73,7 +73,7 @@ $request = json_encode([
     'generationConfig' => ['temperature' => 0.35, 'maxOutputTokens' => 1000],
 ], JSON_UNESCAPED_UNICODE);
 
-$curl = curl_init('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=' . rawurlencode(GEMINI_API_KEY));
+$curl = curl_init('https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=' . rawurlencode(GEMINI_API_KEY));
 if ($curl === false) {
     json_error('Unable to initialize Gemini connection.', 502);
 }
@@ -107,5 +107,5 @@ echo json_encode([
     'status' => 'success',
     'session_id' => $sessionId,
     'reply' => $reply,
-    'model_used' => 'gemini-2.0-flash',
+    'model_used' => 'gemini-3.6-flash',
 ], JSON_UNESCAPED_UNICODE);
