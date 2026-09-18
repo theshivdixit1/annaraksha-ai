@@ -43,12 +43,14 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'OPTIONS') {
     http_response_code(204);
     exit;
 }
-if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'POST') {
-    json_error('Only POST is supported.', 405);
+if (!in_array($_SERVER['REQUEST_METHOD'] ?? 'GET', ['GET', 'POST'], true)) {
+    json_error('Only GET and POST are supported.', 405);
 }
 
 copilot_config();
-$payload = json_decode(file_get_contents('php://input') ?: '', true);
+$payload = ($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'GET'
+    ? $_GET
+    : json_decode(file_get_contents('php://input') ?: '', true);
 if (!is_array($payload) || trim((string) ($payload['message'] ?? '')) === '') {
     json_error('A non-empty message is required.', 400);
 }

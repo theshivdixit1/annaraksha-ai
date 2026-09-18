@@ -904,14 +904,10 @@ class AnnarakshaDashboard {
     </div>`;
 
     try {
-      const resp = await fetch('/api/copilot.php', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          session_id: localStorage.getItem('annaraksha_copilot_session') || 'drawer_session',
-          message: fullPrompt,
-          task_mode: 'general'
-        })
+      const sessionId = localStorage.getItem('annaraksha_copilot_session') || 'drawer_session';
+      const resp = await fetch(`/api/copilot.php?session_id=${encodeURIComponent(sessionId)}&message=${encodeURIComponent(fullPrompt)}&task_mode=general`, {
+        method: 'GET',
+        headers: { 'Accept': 'application/json' }
       });
       const data = await resp.json();
       if (data.status === 'success' && data.reply) {

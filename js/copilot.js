@@ -459,13 +459,9 @@
       console.log(`[Copilot:Client:2/6] 📡 Request Dispatched -> POST /api/copilot (${serialized.length} bytes)`);
 
       try {
-        const res = await fetch('/api/copilot.php', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-          },
-          body: serialized
+        const res = await fetch(`/api/copilot.php?session_id=${encodeURIComponent(sessionId)}&message=${encodeURIComponent(text)}&mode=${encodeURIComponent(currentMode)}`, {
+          method: 'GET',
+          headers: { 'Accept': 'application/json' }
         });
 
         const roundtripMs = Math.round(performance.now() - tStart);
