@@ -172,22 +172,54 @@ class AnnarakshaDashboard {
   }
 
   async loadUnits() {
+    let loaded = false;
     try {
-      const res = await fetch('/api/units.php');
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const json = await res.json();
-      if (json.status === 'success' && Array.isArray(json.data)) {
-        this.units = json.data;
-        this.populateStateOptions();
-        this.applyFilters();
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 3500);
+      const res = await fetch('/api/units', { signal: controller.signal });
+      clearTimeout(timeoutId);
+      if (res.ok) {
+        const json = await res.json();
+        if (json.status === 'success' && Array.isArray(json.data) && json.data.length > 0) {
+          this.units = json.data;
+          loaded = true;
+        }
       }
     } catch (err) {
-      console.error('[Dashboard] Error fetching units:', err);
+      console.warn('[Dashboard] Live server /api/units unreachable or timed out, activating autonomous edge fallback:', err);
     }
+
+    // Resilient fallback: if server units not loaded, load default baseline dataset
+    if (!loaded || !this.units || this.units.length === 0) {
+      if (window.ANNARAKSHA_DEFAULT_UNITS && Array.isArray(window.ANNARAKSHA_DEFAULT_UNITS)) {
+        this.units = JSON.parse(JSON.stringify(window.ANNARAKSHA_DEFAULT_UNITS));
+      } else {
+        this.units = [];
+      }
+    }
+
+    // Merge any custom onboarded units from browser localStorage
+    try {
+      const customUnits = JSON.parse(localStorage.getItem('annaraksha_custom_units') || '[]');
+      if (Array.isArray(customUnits) && customUnits.length > 0) {
+        customUnits.forEach(cu => {
+          if (!this.units.some(u => u.id === cu.id)) {
+            this.units.unshift(cu);
+          }
+        });
+      }
+    } catch (e) {
+      console.warn('LocalStorage custom units load error:', e);
+    }
+
+    this.populateStateOptions();
+    this.applyFilters();
   }
 
   populateStateOptions() {
     if (!this.stateFilterEl) return;
+    const currentVal = this.stateFilterEl.value;
+    this.stateFilterEl.innerHTML = '<option value="">All States</option>';
     const states = Array.from(new Set(this.units.map(u => u.state))).sort();
     states.forEach(st => {
       const opt = document.createElement('option');
@@ -195,6 +227,7 @@ class AnnarakshaDashboard {
       opt.textContent = st;
       this.stateFilterEl.appendChild(opt);
     });
+    if (currentVal) this.stateFilterEl.value = currentVal;
   }
 
   bindEvents() {
@@ -835,7 +868,7 @@ class AnnarakshaDashboard {
     }
 
     try {
-      const res = await fetch(`/api/weather.php?unit_id=${u.id}`);
+      const res = await fetch(`/api/weather?unit_id=${u.id}`);
       const data = await res.json();
       if (data.status === 'success') {
         const cur = data.current_weather;
@@ -904,10 +937,14 @@ class AnnarakshaDashboard {
     </div>`;
 
     try {
-      const sessionId = localStorage.getItem('annaraksha_copilot_session') || 'drawer_session';
-      const resp = await fetch(`/api/copilot.php?session_id=${encodeURIComponent(sessionId)}&message=${encodeURIComponent(fullPrompt)}&task_mode=general`, {
-        method: 'GET',
-        headers: { 'Accept': 'application/json' }
+      const resp = await fetch('/api/copilot', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          session_id: localStorage.getItem('annaraksha_copilot_session') || 'drawer_session',
+          message: fullPrompt,
+          task_mode: 'general'
+        })
       });
       const data = await resp.json();
       if (data.status === 'success' && data.reply) {

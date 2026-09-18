@@ -15,8 +15,8 @@ app.use(express.urlencoded({ extended: true, limit: '15mb' }));
 // CORS headers
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');
-  res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept');
   if (req.method === 'OPTIONS') {
     res.sendStatus(200);
     return;
@@ -103,12 +103,14 @@ if (!unitCountRow || unitCountRow.cnt === 0) {
   }
 }
 
-// Ensure stock_arrival_date column exists in storage_units
-try {
-  db.exec("ALTER TABLE storage_units ADD COLUMN stock_arrival_date TEXT;");
-} catch (colErr) {
-  // Column already exists
-}
+// Ensure stock_arrival_date and onboarding columns exist in storage_units
+try { db.exec("ALTER TABLE storage_units ADD COLUMN stock_arrival_date TEXT;"); } catch {}
+try { db.exec("ALTER TABLE storage_units ADD COLUMN operator_name TEXT;"); } catch {}
+try { db.exec("ALTER TABLE storage_units ADD COLUMN silo_type TEXT;"); } catch {}
+try { db.exec("ALTER TABLE storage_units ADD COLUMN num_bins INTEGER;"); } catch {}
+try { db.exec("ALTER TABLE storage_units ADD COLUMN aeration_system TEXT;"); } catch {}
+try { db.exec("ALTER TABLE storage_units ADD COLUMN iot_sensors TEXT;"); } catch {}
+try { db.exec("ALTER TABLE storage_units ADD COLUMN wdra_code TEXT;"); } catch {}
 
 // Seed realistic stock arrival dates for any unit that doesn't have one
 try {
@@ -276,6 +278,12 @@ const handleUnits = (req: express.Request, res: express.Response) => {
         stock_arrival_date: arrival,
         days_in_storage: daysInStorage,
         predicted_spoilage_date: u.predicted_spoilage_date,
+        silo_type: u.silo_type || 'Vertical Steel Silo',
+        operator_name: u.operator_name || 'FCI / CWC Grid',
+        num_bins: u.num_bins ? Number(u.num_bins) : 4,
+        aeration_system: u.aeration_system || 'Automated Convective Fans',
+        iot_sensors: u.iot_sensors || 'Temperature Cables, RH Ambient, CO2 Gas',
+        wdra_code: u.wdra_code || `WDRA-${u.state ? u.state.substring(0,2).toUpperCase() : 'IN'}-${1000 + (Number(u.id) * 37) % 9000}`,
         last_updated: u.last_updated
       };
     });
@@ -294,6 +302,175 @@ const handleUnits = (req: express.Request, res: express.Response) => {
 };
 app.get('/api/units', handleUnits);
 app.get('/api/units.php', handleUnits);
+
+// 2b. Storage Units Onboarding API (POST /api/units)
+const handleCreateUnit = (req: express.Request, res: express.Response) => {
+  try {
+    const {
+      name,
+      state,
+      city,
+      lat,
+      lng,
+      grain_type,
+      capacity_tonnes,
+      current_stock_tonnes,
+      moisture_pct,
+      stock_arrival_date,
+      silo_type,
+      operator_name,
+      num_bins,
+      aeration_system,
+      iot_sensors,
+      wdra_code
+    } = req.body || {};
+
+    if (!name || !state || !city || !grain_type) {
+      res.status(400).json({
+        status: 'error',
+        message: 'Missing required onboarding parameters: name, state, city, and grain_type are required'
+      });
+      return;
+    }
+
+    const capacity = Math.max(50, Number(capacity_tonnes) || 10000);
+    const stock = Math.min(capacity, Math.max(0, Number(current_stock_tonnes) || Math.round(capacity * 0.82)));
+    const moisture = Math.max(6, Math.min(26, Number(moisture_pct) || 12.2));
+    const latitude = Number(lat) || 28.6139;
+    const longitude = Number(lng) || 77.2090;
+
+    // Calculate baseline risk and spoilage trajectory
+    let risk_level = 'healthy';
+    let predicted_spoilage_date: string | null = null;
+    let daysToSpoilage = 180;
+
+    if (moisture >= 15.5) {
+      risk_level = 'critical';
+      daysToSpoilage = Math.floor(Math.random() * 8) + 4; // 4 - 11 days
+    } else if (moisture >= 13.5) {
+      risk_level = 'watch';
+      daysToSpoilage = Math.floor(Math.random() * 25) + 20; // 20 - 45 days
+    }
+
+    if (risk_level !== 'healthy') {
+      const targetDate = new Date(Date.now() + daysToSpoilage * 86400000);
+      predicted_spoilage_date = targetDate.toISOString().split('T')[0];
+    }
+
+    const arrival = stock_arrival_date || new Date().toISOString().split('T')[0];
+    const generatedWdra = wdra_code || `WDRA-${state.substring(0, 2).toUpperCase()}-${Math.floor(1000 + Math.random() * 9000)}-2026`;
+
+    const insertStmt = db.prepare(`
+      INSERT INTO storage_units (
+        name, state, city, lat, lng, grain_type,
+        capacity_tonnes, current_stock_tonnes, moisture_pct,
+        risk_level, predicted_spoilage_date, stock_arrival_date,
+        silo_type, operator_name, num_bins, aeration_system, iot_sensors, wdra_code,
+        last_updated
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+    `);
+
+    const result = insertStmt.run(
+      name.trim(),
+      state.trim(),
+      city.trim(),
+      latitude,
+      longitude,
+      grain_type.toLowerCase().trim(),
+      capacity,
+      stock,
+      moisture,
+      risk_level,
+      predicted_spoilage_date,
+      arrival,
+      silo_type || 'Vertical Corrugated Steel Silo',
+      operator_name || 'FCI / CWC Partner Grid',
+      Number(num_bins) || 4,
+      aeration_system || 'Automated Convective Fans',
+      iot_sensors || 'Multizone Temperature Cables, Headspace RH, CO2 Sniffer',
+      generatedWdra
+    );
+
+    const newId = Number(result.lastInsertRowid);
+
+    // If critical or watch risk, trigger an initial automated alert
+    if (risk_level === 'critical' || risk_level === 'watch') {
+      try {
+        const grainRates: Record<string, number> = {
+          wheat: 22750, rice: 24500, moong: 78000, chana: 54000, bajra: 19500, jowar: 29000
+        };
+        const rate = grainRates[grain_type.toLowerCase().trim()] || 23000;
+        const tonnesAtRisk = Math.round(stock * (risk_level === 'critical' ? 0.85 : 0.5));
+        const rupeesAtRisk = tonnesAtRisk * rate;
+        const alertMsg = risk_level === 'critical'
+          ? `[Onboarding Alert] Critical intake moisture (${moisture}%) at newly commissioned unit "${name}". Spoilage trajectory: ${daysToSpoilage} days.`
+          : `[Onboarding Advisory] Elevated moisture (${moisture}%) noted at newly commissioned unit "${name}". Schedule convective aeration.`;
+
+        db.prepare(`
+          INSERT INTO alerts (unit_id, message, severity, tonnes_at_risk, rupees_at_risk, created_at)
+          VALUES (?, ?, ?, ?, ?, datetime('now'))
+        `).run(newId, alertMsg, risk_level === 'critical' ? 'critical' : 'warning', tonnesAtRisk, rupeesAtRisk);
+      } catch (alertErr) {
+        console.warn('Alert creation notice:', alertErr);
+      }
+    }
+
+    const createdUnit = {
+      id: newId,
+      name: name.trim(),
+      state: state.trim(),
+      city: city.trim(),
+      lat: latitude,
+      lng: longitude,
+      grain_type: grain_type.toLowerCase().trim(),
+      capacity_tonnes: capacity,
+      current_stock_tonnes: stock,
+      moisture_pct: moisture,
+      risk_level,
+      predicted_spoilage_date,
+      stock_arrival_date: arrival,
+      days_in_storage: 1,
+      silo_type: silo_type || 'Vertical Corrugated Steel Silo',
+      operator_name: operator_name || 'FCI / CWC Partner Grid',
+      num_bins: Number(num_bins) || 4,
+      aeration_system: aeration_system || 'Automated Convective Fans',
+      iot_sensors: iot_sensors || 'Multizone Temperature Cables, Headspace RH, CO2 Sniffer',
+      wdra_code: generatedWdra,
+      last_updated: new Date().toISOString()
+    };
+
+    console.log(`[Storage Onboarding] Successfully onboarded unit #${newId}: "${name}" (${city}, ${state})`);
+
+    res.status(201).json({
+      status: 'success',
+      message: `Facility "${name}" successfully registered and integrated into Annaraksha National Defense Grid!`,
+      data: createdUnit
+    });
+  } catch (err: any) {
+    console.error('Error onboarding storage unit:', err);
+    res.status(500).json({ status: 'error', message: 'Failed to onboard storage unit: ' + err.message });
+  }
+};
+
+app.post('/api/units', handleCreateUnit);
+app.post('/api/units.php', handleCreateUnit);
+app.post('/api/units/onboard', handleCreateUnit);
+
+// Decommission / Delete Unit
+app.delete('/api/units/:id', (req, res) => {
+  try {
+    const id = Number(req.params.id);
+    if (!id || isNaN(id)) {
+      res.status(400).json({ status: 'error', message: 'Invalid facility ID' });
+      return;
+    }
+    db.prepare('DELETE FROM storage_units WHERE id = ?').run(id);
+    db.prepare('DELETE FROM alerts WHERE unit_id = ?').run(id);
+    res.json({ status: 'success', message: `Storage unit #${id} decommissioned successfully` });
+  } catch (err: any) {
+    res.status(500).json({ status: 'error', message: err.message });
+  }
+});
 
 // 3. Alerts Simulator & Live Feed API
 function generateSimulatedAlerts() {

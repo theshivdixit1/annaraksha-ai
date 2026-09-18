@@ -122,6 +122,9 @@
         <button class="hud-tab-btn" data-target="view-directory">
           <span>📋 Directory</span>
         </button>
+        <button class="hud-tab-btn" data-target="view-onboarding" style="border-color:rgba(14,165,233,0.4); color:#38bdf8;">
+          <span>📥 Onboard Facility</span>
+        </button>
         <button class="hud-tab-btn" data-target="view-silo">
           <span>🔬 3D Silo Twin</span>
         </button>
@@ -181,7 +184,12 @@
           <div class="sidebar-header">
             <div style="display:flex; justify-content:space-between; align-items:center;">
               <h2 style="font-size:0.95rem; font-weight:800; color:#ffffff; text-transform:uppercase; letter-spacing:0.04em;">Storage Facilities</h2>
-              <span style="font-size:0.72rem; color:#06b6d4; font-family:var(--font-mono); font-weight:700;" id="facilities-count-badge">60 Monitored</span>
+              <div style="display:flex; align-items:center; gap:0.4rem;">
+                <button id="quick-onboard-btn" class="btn btn-primary" style="padding:0.25rem 0.6rem; font-size:0.68rem; background:rgba(14,165,233,0.15); border-color:#0284c7; color:#38bdf8;" title="Onboard new grain storage unit">
+                  + Onboard Unit
+                </button>
+                <span style="font-size:0.72rem; color:#06b6d4; font-family:var(--font-mono); font-weight:700;" id="facilities-count-badge">60 Monitored</span>
+              </div>
             </div>
 
             <div class="sidebar-controls">
@@ -894,8 +902,13 @@
               All 60 facilities across India with real-time moisture telemetry, capacity utilization, and spoilage forecasts.
             </p>
           </div>
-          <div style="font-size:0.85rem; font-weight:700; color:#06b6d4; font-family:var(--font-mono);" id="dir-count-text">
-            Showing 60 facilities
+          <div style="display:flex; align-items:center; gap:0.75rem;">
+            <button id="dir-register-btn" class="btn btn-primary" style="padding:0.45rem 0.9rem; font-size:0.78rem; background:rgba(14,165,233,0.18); border-color:#0284c7; color:#38bdf8; display:flex; align-items:center; gap:0.4rem;">
+              <span>+ Register Storage Unit</span>
+            </button>
+            <div style="font-size:0.85rem; font-weight:700; color:#06b6d4; font-family:var(--font-mono);" id="dir-count-text">
+              Showing 60 facilities
+            </div>
           </div>
         </div>
 
@@ -1329,17 +1342,309 @@
       </div>
     </div>
 
-  </div>
+    <!-- =======================================================================
+         MODULE 9: STORAGE UNITS & SILOS ONBOARDING ENGINE
+         ======================================================================= -->
+    <div id="view-onboarding" class="hud-module-pane" style="display:none; height:100%; overflow-y:auto; padding:1.5rem;">
+      <div style="max-width:1380px; margin:0 auto; display:flex; flex-direction:column; gap:1.25rem;">
+        
+        <!-- Header & Quick Preset Bar -->
+        <div style="display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:1rem; border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:1rem;">
+          <div>
+            <div style="font-size:0.75rem; font-weight:700; color:#06b6d4; text-transform:uppercase; letter-spacing:0.06em;">Digital Infrastructure Onboarding</div>
+            <h2 style="font-size:1.6rem; font-weight:800; color:#ffffff; margin-top:2px;">National Storage Units Onboarding Console</h2>
+            <p style="color:#94a3b8; font-size:0.85rem; margin-top:0.25rem;">
+              Commission new grain silos, warehouse godowns, and buffer storage facilities into the Annaraksha National Defense Grid with automated pre-flight spoilage telemetry.
+            </p>
+          </div>
+
+          <!-- 1-Click Quick Preset Archetypes -->
+          <div style="display:flex; flex-direction:column; align-items:flex-end; gap:0.4rem;">
+            <div style="font-size:0.68rem; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.05em;">1-Click Quick-Fill Archetypes:</div>
+            <div style="display:flex; gap:0.4rem; flex-wrap:wrap;">
+              <button class="ob-preset-btn" data-preset="punjab-wheat" title="Load Punjab Mega Steel Silo preset">
+                <span>🌾 Punjab Mega Wheat Silo</span>
+              </button>
+              <button class="ob-preset-btn" data-preset="vidarbha-pulse" title="Load Vidarbha Pulse Vault preset">
+                <span>🥜 Vidarbha Pulse Vault</span>
+              </button>
+              <button class="ob-preset-btn" data-preset="andhra-rice" title="Load Coastal Andhra Rice Buffer preset">
+                <span>🍚 Coastal Andhra Rice Silo</span>
+              </button>
+              <button class="ob-preset-btn" data-preset="rajasthan-millet" title="Load Rajasthan Desert Depot preset">
+                <span>🏜️ Rajasthan Millet Depot</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Main Onboarding Form -->
+        <form id="onboarding-form">
+          <div class="onboarding-grid">
+            
+            <!-- COLUMN 1: FACILITY IDENTIFICATION & GEO-SPATIAL TELEMETRY -->
+            <div class="ob-card">
+              <div class="ob-card-header">
+                <div class="ob-card-icon">📍</div>
+                <div>
+                  <h3 style="font-size:0.92rem; font-weight:800; color:#ffffff;">Facility Profile &amp; Location</h3>
+                  <div style="font-size:0.68rem; color:#94a3b8;">Regulatory credentials and geographic coordinates</div>
+                </div>
+              </div>
+
+              <!-- Facility Name -->
+              <div class="ob-field">
+                <label class="ob-label" for="ob-name">Facility / Terminal Name *</label>
+                <input type="text" id="ob-name" class="ob-input" placeholder="e.g., Karnal AgriVault North Silo 02" required value="Ludhiana Grand Northern Silo Hub" />
+              </div>
+
+              <!-- Operating Authority -->
+              <div class="ob-field">
+                <label class="ob-label" for="ob-operator">Operating Authority</label>
+                <select id="ob-operator" class="ob-select">
+                  <option value="FCI (Food Corporation of India)">FCI (Food Corporation of India)</option>
+                  <option value="Central Warehousing Corporation (CWC)">Central Warehousing Corporation (CWC)</option>
+                  <option value="State Warehousing Corporation (SWC)">State Warehousing Corporation (SWC)</option>
+                  <option value="PUNGRAIN / Markfed">PUNGRAIN / Markfed Punjab</option>
+                  <option value="HAFED Haryana">HAFED Haryana</option>
+                  <option value="Farmer Producer Organization (FPO)">Farmer Producer Organization (FPO)</option>
+                  <option value="Private Logistics / Terminal Miller">Private Logistics / Terminal Miller</option>
+                </select>
+              </div>
+
+              <!-- State & City Auto-Fill Cascading -->
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.65rem;">
+                <div class="ob-field">
+                  <label class="ob-label" for="ob-state">State *</label>
+                  <select id="ob-state" class="ob-select" required>
+                    <!-- Populated via JS -->
+                  </select>
+                </div>
+                <div class="ob-field">
+                  <label class="ob-label" for="ob-city">Agricultural Hub *</label>
+                  <select id="ob-city" class="ob-select" required>
+                    <option value="">-- Select State First --</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Coordinates & Location Tools -->
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.65rem;">
+                <div class="ob-field">
+                  <label class="ob-label" for="ob-lat">Latitude (°N)</label>
+                  <input type="number" step="0.0001" id="ob-lat" class="ob-input" value="30.9010" />
+                </div>
+                <div class="ob-field">
+                  <label class="ob-label" for="ob-lng">Longitude (°E)</label>
+                  <input type="number" step="0.0001" id="ob-lng" class="ob-input" value="75.8573" />
+                </div>
+              </div>
+
+              <div style="display:flex; gap:0.5rem;">
+                <button type="button" id="ob-btn-gps" class="btn btn-secondary" style="flex:1; padding:0.45rem; font-size:0.72rem; display:flex; align-items:center; justify-content:center; gap:0.35rem;">
+                  <span>📍 Detect My GPS</span>
+                </button>
+                <button type="button" id="ob-btn-mappick" class="btn btn-secondary" style="flex:1; padding:0.45rem; font-size:0.72rem; display:flex; align-items:center; justify-content:center; gap:0.35rem;">
+                  <span>🗺️ Pick on Grid Map</span>
+                </button>
+              </div>
+
+              <!-- WDRA Code -->
+              <div class="ob-field" style="margin-top:auto;">
+                <label class="ob-label" for="ob-wdra">WDRA / e-WQR License Code</label>
+                <input type="text" id="ob-wdra" class="ob-input" value="WDRA-PB-LDH-4821-2026" style="font-family:var(--font-mono); color:#38bdf8;" />
+              </div>
+            </div>
+
+            <!-- COLUMN 2: STORAGE INFRASTRUCTURE & ARCHITECTURE -->
+            <div class="ob-card">
+              <div class="ob-card-header">
+                <div class="ob-card-icon">🏗️</div>
+                <div>
+                  <h3 style="font-size:0.92rem; font-weight:800; color:#ffffff;">Storage Architecture &amp; Hardware</h3>
+                  <div style="font-size:0.68rem; color:#94a3b8;">Physical civil structure and aeration systems</div>
+                </div>
+              </div>
+
+              <!-- Structure Type -->
+              <div class="ob-field">
+                <label class="ob-label" for="ob-silo-type">Silo / Structure Archetype</label>
+                <select id="ob-silo-type" class="ob-select">
+                  <option value="Vertical Corrugated Steel Silo">Vertical Corrugated Galvanized Steel Silo</option>
+                  <option value="Reinforced Concrete Grain Elevators">Reinforced Concrete Grain Elevator</option>
+                  <option value="Covered Warehouse Godown">Traditional Covered Warehouse Godown</option>
+                  <option value="Hermetic Bag Bunker">Hermetic Bag Bunker (Oxygen-Depleted Seal)</option>
+                  <option value="Cover and Plinth (CAP)">Cover and Plinth (CAP Open Stack)</option>
+                </select>
+              </div>
+
+              <!-- Capacity & Intake Volume -->
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.65rem;">
+                <div class="ob-field">
+                  <label class="ob-label" for="ob-capacity">Total Capacity (MT) *</label>
+                  <input type="number" id="ob-capacity" class="ob-input" value="15000" min="50" max="250000" step="100" required />
+                </div>
+                <div class="ob-field">
+                  <label class="ob-label" for="ob-stock">Initial Stock (MT) *</label>
+                  <input type="number" id="ob-stock" class="ob-input" value="13500" min="0" max="250000" step="100" required />
+                </div>
+              </div>
+
+              <!-- Silo Bins & Aeration System -->
+              <div style="display:grid; grid-template-columns:1fr 2fr; gap:0.65rem;">
+                <div class="ob-field">
+                  <label class="ob-label" for="ob-bins">Bin Cells</label>
+                  <input type="number" id="ob-bins" class="ob-input" value="8" min="1" max="32" />
+                </div>
+                <div class="ob-field">
+                  <label class="ob-label" for="ob-aeration">Aeration &amp; HVAC</label>
+                  <select id="ob-aeration" class="ob-select">
+                    <option value="Automated Convective Fans">Automated Convective Fans (PID Night Cycle)</option>
+                    <option value="Refrigerated Grain Chilling">Refrigerated Grain Chilling (15°C Cold Chain)</option>
+                    <option value="Continuous Convective Blowers">Continuous Convective Blowers</option>
+                    <option value="Phosphine Recirculation Loop">Phosphine (PH3) Fumigation Circuit</option>
+                    <option value="Passive Vents">Passive Roof Louvers / Gravity Vents</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- IoT Sensor Telemetry Checkboxes -->
+              <div class="ob-field">
+                <label class="ob-label">Installed IoT Sensor Hardware</label>
+                <div class="ob-checkbox-grid">
+                  <label class="ob-checkbox-label">
+                    <input type="checkbox" checked disabled />
+                    <span>Multizone Cable Cables</span>
+                  </label>
+                  <label class="ob-checkbox-label">
+                    <input type="checkbox" checked />
+                    <span>Headspace RH Sensor</span>
+                  </label>
+                  <label class="ob-checkbox-label">
+                    <input type="checkbox" checked />
+                    <span>CO2 Bio-Sniffer</span>
+                  </label>
+                  <label class="ob-checkbox-label">
+                    <input type="checkbox" checked />
+                    <span>Ultrasonic Level Radar</span>
+                  </label>
+                </div>
+              </div>
+
+              <!-- Commissioning Protocol Badge -->
+              <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); border-radius:8px; padding:0.6rem 0.75rem; font-size:0.72rem; color:#94a3b8; display:flex; align-items:center; gap:0.5rem; margin-top:auto;">
+                <span style="color:#10b981;">🛡️</span>
+                <span>ISO 9001:2015 &bull; WDRA Scientific Storage Standards Active</span>
+              </div>
+            </div>
+
+            <!-- COLUMN 3: INTAKE QUALITY & REAL-TIME PRE-FLIGHT RISK ENGINE -->
+            <div class="ob-card">
+              <div class="ob-card-header">
+                <div class="ob-card-icon">⚡</div>
+                <div>
+                  <h3 style="font-size:0.92rem; font-weight:800; color:#ffffff;">Intake Quality &amp; AI Pre-Flight</h3>
+                  <div style="font-size:0.68rem; color:#94a3b8;">Real-time moisture and spoilage projection engine</div>
+                </div>
+              </div>
+
+              <!-- Crop Type -->
+              <div class="ob-field">
+                <label class="ob-label" for="ob-grain">Grain Commodity *</label>
+                <select id="ob-grain" class="ob-select" required>
+                  <option value="wheat">Wheat (Kalyan Sona / Sharbati - MSP ₹2,275/qtl)</option>
+                  <option value="rice">Rice / Paddy (Basmati / Common - MSP ₹2,450/qtl)</option>
+                  <option value="moong">Moong Pulses (Green Gram - MSP ₹7,800/qtl)</option>
+                  <option value="chana">Chana (Bengal Gram - MSP ₹5,400/qtl)</option>
+                  <option value="bajra">Bajra (Pearl Millet - MSP ₹1,950/qtl)</option>
+                  <option value="jowar">Jowar (Sorghum - MSP ₹2,900/qtl)</option>
+                  <option value="maize">Maize (Corn - MSP ₹2,090/qtl)</option>
+                  <option value="mustard">Mustard Seed (MSP ₹5,650/qtl)</option>
+                  <option value="soyabean">Soyabean (Yellow - MSP ₹4,600/qtl)</option>
+                </select>
+              </div>
+
+              <!-- Moisture Content (% Wet Basis) with Slider -->
+              <div class="ob-field">
+                <div class="ob-label">
+                  <span>Intake Grain Moisture (%) *</span>
+                  <span id="ob-moisture-val-label" style="font-size:0.85rem; color:#06b6d4; font-family:var(--font-mono);">11.2%</span>
+                </div>
+                <div style="display:flex; align-items:center; gap:0.75rem;">
+                  <input type="range" id="ob-moisture-slider" min="9" max="22" step="0.1" value="11.2" style="flex:1; accent-color:#06b6d4;" oninput="document.getElementById('ob-moisture').value = this.value; document.getElementById('ob-moisture-val-label').textContent = this.value + '%';" />
+                  <input type="number" id="ob-moisture" class="ob-input" value="11.2" min="8" max="25" step="0.1" style="width:75px; text-align:center; font-family:var(--font-mono); font-weight:700;" required oninput="document.getElementById('ob-moisture-slider').value = this.value; document.getElementById('ob-moisture-val-label').textContent = this.value + '%';" />
+                </div>
+                <div style="display:flex; justify-content:space-between; font-size:0.62rem; color:#64748b; font-family:var(--font-mono); margin-top:2px;">
+                  <span style="color:#10b981;">&le;12% Safe Dry</span>
+                  <span style="color:#f59e0b;">13.5-15% Watch Window</span>
+                  <span style="color:#f43f5e;">&gt;15.5% Critical Risk</span>
+                </div>
+              </div>
+
+              <!-- Real-Time AI Telemetry Pre-Flight Card -->
+              <div class="ob-telemetry-hud">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                  <span style="font-size:0.68rem; font-weight:700; color:#94a3b8; text-transform:uppercase;">Pre-Flight Status:</span>
+                  <div id="ob-calc-risk-badge">
+                    <span class="risk-pill risk-pill-healthy">● Healthy Tier</span>
+                  </div>
+                </div>
+
+                <div>
+                  <div style="font-size:0.68rem; color:#64748b; text-transform:uppercase;">Projected Safe Horizon (DTS):</div>
+                  <div id="ob-calc-dts" style="font-size:1.05rem; font-weight:800; color:#ffffff; font-family:var(--font-mono); margin-top:1px;">
+                    &gt; 180 Days (Safe)
+                  </div>
+                </div>
+
+                <div>
+                  <div style="font-size:0.68rem; color:#64748b; text-transform:uppercase;">Capacity Utilization:</div>
+                  <div style="background:rgba(255,255,255,0.06); height:6px; border-radius:999px; overflow:hidden; margin-top:4px;">
+                    <div id="ob-calc-util-bar" style="height:100%; width:90%; background:#06b6d4; transition:width 0.3s ease;"></div>
+                  </div>
+                  <div id="ob-calc-util-pct" style="font-size:0.68rem; color:#94a3b8; text-align:right; margin-top:2px; font-family:var(--font-mono);">
+                    90% (13,500 / 15,000 T)
+                  </div>
+                </div>
+
+                <div>
+                  <div style="font-size:0.68rem; color:#64748b; text-transform:uppercase;">Loss Value at Risk:</div>
+                  <div id="ob-calc-value" style="font-size:0.85rem; font-weight:700; color:#38bdf8; font-family:var(--font-mono);">
+                    ₹1.54 Cr (Total Inventory: ₹30.71 Cr)
+                  </div>
+                </div>
+
+                <div style="border-top:1px solid rgba(255,255,255,0.08); padding-top:0.5rem;">
+                  <div style="font-size:0.65rem; color:#64748b; text-transform:uppercase;">Agronomic Directive:</div>
+                  <div id="ob-calc-directive" style="font-size:0.72rem; color:#cbd5e1; line-height:1.35; margin-top:2px;">
+                    Standard ambient convective airflow schedule (02:00-06:00 IST).
+                  </div>
+                </div>
+              </div>
+
+              <!-- Submit Button -->
+              <button type="submit" id="ob-submit-btn" class="btn btn-primary" style="padding:0.75rem 1.25rem; font-size:0.85rem; font-weight:800; display:flex; align-items:center; justify-content:center; gap:0.5rem; background:#0284c7; border-color:#0284c7; box-shadow:0 0 20px rgba(2,132,199,0.4); margin-top:auto;">
+                <span>⚡ Register &amp; Commission Facility</span>
+              </button>
+            </div>
+
+          </div>
+        </form>
+
+      </div>
+    </div>
 
   <!-- Scripts -->
   <script src="js/futuristic-fx.js"></script>
   <script src="js/silo-3d.js"></script>
   <script src="js/scanner-3d.js"></script>
   <script src="js/ticker.js"></script>
+  <script src="js/storage-units-data.js"></script>
   <script src="js/copilot.js"></script>
   <script src="js/silo-animation.js"></script>
   <script src="js/dashboard.js"></script>
   <script src="js/spoilage-predictor.js"></script>
+  <script src="js/onboarding.js"></script>
   <script src="js/futuristic-app.js"></script>
   <script src="js/moisture-chart.bundle.js"></script>
 
@@ -1518,22 +1823,48 @@
         try {
           const res = await fetch('/api/units.php');
           const json = await res.json();
-          if (json.status === 'success' && Array.isArray(json.data)) {
+          if (json.status === 'success' && Array.isArray(json.data) && json.data.length > 0) {
             directoryUnits = json.data;
+          }
+        } catch (err) {
+          console.warn('[Directory] Live API fetch failed, engaging fallback dataset:', err);
+        }
 
-            // Populate states in directory dropdown
-            const states = Array.from(new Set(directoryUnits.map(u => u.state))).sort();
+        if (!directoryUnits || directoryUnits.length === 0) {
+          if (window.dashboardEngine?.units && window.dashboardEngine.units.length > 0) {
+            directoryUnits = [...window.dashboardEngine.units];
+          } else if (window.ANNARAKSHA_DEFAULT_UNITS) {
+            directoryUnits = [...window.ANNARAKSHA_DEFAULT_UNITS];
+          }
+        }
+
+        // Merge any custom onboarded units stored in localStorage
+        try {
+          const custom = JSON.parse(localStorage.getItem('annaraksha_custom_units') || '[]');
+          if (Array.isArray(custom) && custom.length > 0) {
+            const existingIds = new Set(directoryUnits.map(u => u.id));
+            custom.forEach(cu => {
+              if (!existingIds.has(cu.id)) {
+                directoryUnits.unshift(cu);
+              }
+            });
+          }
+        } catch (e) {
+          console.warn('Error reading localStorage for directory:', e);
+        }
+
+        if (directoryUnits && directoryUnits.length > 0) {
+          const states = Array.from(new Set(directoryUnits.map(u => u.state))).sort();
+          if (dirState) {
+            dirState.innerHTML = '<option value="">All States</option>';
             states.forEach(st => {
               const opt = document.createElement('option');
               opt.value = st;
               opt.textContent = st;
               dirState.appendChild(opt);
             });
-
-            renderDirectoryTable(directoryUnits);
           }
-        } catch (err) {
-          if (dirTbody) dirTbody.innerHTML = `<tr><td colspan="9" style="text-align:center; padding:2rem; color:#f43f5e;">Error loading data: ${err.message}</td></tr>`;
+          renderDirectoryTable(directoryUnits);
         }
       }
 
@@ -1631,6 +1962,39 @@
       }
 
       initDirectory();
+
+      // 7. Initialize Storage Units Onboarding Controller
+      if (window.StorageUnitsOnboarding) {
+        window.onboardingEngine = new window.StorageUnitsOnboarding();
+      }
+
+      // Quick-jump buttons to Onboarding Console
+      const quickOnboardBtn = document.getElementById('quick-onboard-btn');
+      if (quickOnboardBtn) {
+        quickOnboardBtn.addEventListener('click', () => {
+          const onboardTab = document.querySelector('.hud-tab-btn[data-target="view-onboarding"]');
+          if (onboardTab) onboardTab.click();
+        });
+      }
+
+      const dirRegisterBtn = document.getElementById('dir-register-btn');
+      if (dirRegisterBtn) {
+        dirRegisterBtn.addEventListener('click', () => {
+          const onboardTab = document.querySelector('.hud-tab-btn[data-target="view-onboarding"]');
+          if (onboardTab) onboardTab.click();
+        });
+      }
+
+      // Real-time listener: when a unit is created, update Directory table immediately
+      window.addEventListener('annaraksha:unit-created', (e) => {
+        if (e.detail?.unit) {
+          const newUnit = e.detail.unit;
+          if (!directoryUnits.some(u => u.id === newUnit.id)) {
+            directoryUnits.unshift(newUnit);
+            renderDirectoryTable(directoryUnits);
+          }
+        }
+      });
     });
   </script>
 
@@ -1840,6 +2204,158 @@
             <div style="font-size:0.75rem; font-weight:800; color:#0f172a; text-transform:uppercase;">ANNARAKSHA AI TELEMETRY ENGINE</div>
             <div style="font-size:0.65rem; color:#64748b;">Autonomous Mandi Quality Ingestion System</div>
             <div style="font-size:0.65rem; font-weight:700; color:#16a34a; margin-top:2px;">● DIGITALLY AUTHENTICATED &amp; SIGNED</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       MODAL 3: OFFICIAL DIGITAL FACILITY ONBOARDING & COMMISSIONING CERTIFICATE
+       ========================================================================= -->
+  <div id="onboard-success-modal" class="ob-modal-backdrop" role="dialog" aria-modal="true" aria-label="Official Facility Onboarding Certificate">
+    <div class="cert-paper" style="max-width:760px;">
+      <div class="cert-paper-inner">
+        <!-- Security Watermark -->
+        <div class="cert-watermark">COMMISSIONED</div>
+
+        <!-- Official Header Bar -->
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; border-bottom:2px solid #0284c7; padding-bottom:1rem; margin-bottom:1.25rem;">
+          <div style="display:flex; gap:1rem; align-items:center;">
+            <div style="width:48px; height:48px; border-radius:8px; background:#0284c7; display:flex; align-items:center; justify-content:center; color:#ffffff; font-weight:900; font-size:1.4rem;">
+              🏛️
+            </div>
+            <div>
+              <div style="font-size:0.68rem; font-weight:700; color:#64748b; letter-spacing:0.08em; text-transform:uppercase;">Government of India &bull; WDRA National Registry</div>
+              <h2 style="font-size:1.15rem; font-weight:800; color:#0f172a; margin:2px 0 0; line-height:1.2;">NATIONAL GRAIN PRESERVATION DEFENSE GRID</h2>
+              <div style="font-size:0.75rem; color:#0284c7; font-weight:600;">Electronic Warehouse / Silo Commissioning Receipt (e-WCR)</div>
+            </div>
+          </div>
+
+          <!-- Print & Close Controls -->
+          <div class="cert-no-print" style="display:flex; gap:0.5rem; align-items:center;">
+            <button id="ob-modal-print-btn" class="btn btn-primary" style="padding:0.45rem 0.9rem; font-size:0.75rem; background:#0284c7; border-color:#0284c7; color:#fff; display:flex; align-items:center; gap:0.35rem;">
+              <span>🖨️ Print / Save PDF</span>
+            </button>
+            <button id="ob-modal-close-btn" style="background:#f1f5f9; border:1px solid #cbd5e1; border-radius:6px; width:32px; height:32px; display:flex; align-items:center; justify-content:center; color:#475569; cursor:pointer;" aria-label="Close certificate">
+              &times;
+            </button>
+          </div>
+        </div>
+
+        <!-- Success Banner -->
+        <div style="background:#f0fdf4; border:1px solid #bbf7d0; border-radius:8px; padding:0.75rem 1rem; display:flex; align-items:center; gap:0.75rem; margin-bottom:1rem;">
+          <div style="width:28px; height:28px; border-radius:50%; background:#22c55e; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:0.9rem;">
+            ✓
+          </div>
+          <div>
+            <div style="font-size:0.85rem; font-weight:800; color:#15803d;">FACILITY COMMISSIONED &amp; TELEMETRY SYNCED</div>
+            <div style="font-size:0.72rem; color:#166534;">Unit successfully registered into Annaraksha AI live operations defense grid and local synchronization layer.</div>
+          </div>
+        </div>
+
+        <!-- Certificate Metadata Grid -->
+        <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:0.85rem; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:0.85rem 1rem; font-size:0.78rem;">
+          <div>
+            <div style="font-size:0.65rem; color:#64748b; text-transform:uppercase; font-weight:600;">System Unit ID</div>
+            <div id="ob-modal-unit-id" style="font-weight:700; color:#0f172a; font-family:var(--font-mono); margin-top:2px;">UNIT #61</div>
+          </div>
+          <div>
+            <div style="font-size:0.65rem; color:#64748b; text-transform:uppercase; font-weight:600;">Registration Timestamp</div>
+            <div id="ob-modal-timestamp" style="font-weight:600; color:#334155; margin-top:2px;">--</div>
+          </div>
+          <div>
+            <div style="font-size:0.65rem; color:#64748b; text-transform:uppercase; font-weight:600;">WDRA Code</div>
+            <div id="ob-modal-wdra" style="font-weight:700; color:#0284c7; font-family:var(--font-mono); margin-top:2px;">--</div>
+          </div>
+          <div style="grid-column: span 2;">
+            <div style="font-size:0.65rem; color:#64748b; text-transform:uppercase; font-weight:600;">Facility / Terminal Name</div>
+            <div id="ob-modal-facility-name" style="font-weight:700; color:#0f172a; margin-top:2px; font-size:0.85rem;">--</div>
+          </div>
+          <div>
+            <div style="font-size:0.65rem; color:#64748b; text-transform:uppercase; font-weight:600;">Operating Authority</div>
+            <div id="ob-modal-operator" style="font-weight:600; color:#334155; margin-top:2px;">--</div>
+          </div>
+          <div>
+            <div style="font-size:0.65rem; color:#64748b; text-transform:uppercase; font-weight:600;">State &amp; District</div>
+            <div id="ob-modal-location" style="font-weight:700; color:#0f172a; margin-top:2px;">--</div>
+          </div>
+          <div>
+            <div style="font-size:0.65rem; color:#64748b; text-transform:uppercase; font-weight:600;">Geo-Coordinates</div>
+            <div id="ob-modal-coords" style="font-weight:600; color:#334155; font-family:var(--font-mono); margin-top:2px;">--</div>
+          </div>
+          <div>
+            <div style="font-size:0.65rem; color:#64748b; text-transform:uppercase; font-weight:600;">Silo Structure Archetype</div>
+            <div id="ob-modal-type" style="font-weight:600; color:#334155; margin-top:2px;">--</div>
+          </div>
+          <div>
+            <div style="font-size:0.65rem; color:#64748b; text-transform:uppercase; font-weight:600;">Commodity Grain</div>
+            <div id="ob-modal-grain" style="font-weight:700; color:#0284c7; margin-top:2px;">--</div>
+          </div>
+          <div>
+            <div style="font-size:0.65rem; color:#64748b; text-transform:uppercase; font-weight:600;">Stock &amp; Rated Capacity</div>
+            <div id="ob-modal-stock-capacity" style="font-weight:700; color:#0f172a; margin-top:2px;">--</div>
+          </div>
+          <div>
+            <div style="font-size:0.65rem; color:#64748b; text-transform:uppercase; font-weight:600;">Initial Moisture Level</div>
+            <div id="ob-modal-moisture" style="font-weight:800; font-family:var(--font-mono); margin-top:2px;">--</div>
+          </div>
+        </div>
+
+        <!-- Telemetry & Directives Box -->
+        <div style="background:#f1f5f9; border:1px solid #cbd5e1; border-radius:8px; padding:0.85rem 1rem; margin-top:0.85rem; display:flex; justify-content:space-between; align-items:center; gap:1rem;">
+          <div>
+            <div style="font-size:0.65rem; color:#64748b; text-transform:uppercase; font-weight:600;">AI Spoilage Horizon &amp; Risk Tier</div>
+            <div id="ob-modal-risk-banner" style="font-weight:800; font-size:0.95rem; margin-top:2px;">
+              Healthy Tier (&gt; 180 Days Safe Horizon)
+            </div>
+            <div id="ob-modal-directive" style="font-size:0.72rem; color:#475569; margin-top:3px;">
+              Standard ambient convective aeration cycle active.
+            </div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-size:0.65rem; color:#64748b; text-transform:uppercase; font-weight:600;">Estimated Valuation</div>
+            <div id="ob-modal-value" style="font-weight:800; color:#0f172a; font-family:var(--font-mono); font-size:0.95rem; margin-top:2px;">
+              ₹30.71 Cr
+            </div>
+          </div>
+        </div>
+
+        <!-- Cryptographic QR & Sign-Off Footer -->
+        <div style="display:flex; justify-content:space-between; align-items:flex-end; border-top:1px solid #e2e8f0; padding-top:1rem; margin-top:1.25rem;">
+          <div style="display:flex; gap:0.85rem; align-items:center;">
+            <svg width="52" height="52" viewBox="0 0 100 100" style="background:#fff; border:1px solid #cbd5e1; border-radius:4px; padding:2px;">
+              <rect x="5" y="5" width="30" height="30" fill="#0f172a" />
+              <rect x="10" y="10" width="20" height="20" fill="#ffffff" />
+              <rect x="15" y="15" width="10" height="10" fill="#0f172a" />
+              <rect x="65" y="5" width="30" height="30" fill="#0f172a" />
+              <rect x="70" y="10" width="20" height="20" fill="#ffffff" />
+              <rect x="75" y="15" width="10" height="10" fill="#0f172a" />
+              <rect x="5" y="65" width="30" height="30" fill="#0f172a" />
+              <rect x="10" y="70" width="20" height="20" fill="#ffffff" />
+              <rect x="15" y="75" width="10" height="10" fill="#0f172a" />
+              <rect x="45" y="10" width="10" height="10" fill="#0f172a" />
+              <rect x="45" y="50" width="10" height="10" fill="#0f172a" />
+              <rect x="65" y="65" width="10" height="10" fill="#0f172a" />
+            </svg>
+            <div>
+              <div style="font-size:0.65rem; font-family:var(--font-mono); color:#64748b;">WDRA TELEMETRY NODE HASH:</div>
+              <div id="ob-modal-hash" style="font-size:0.62rem; font-family:var(--font-mono); color:#0284c7; word-break:break-all; max-width:300px;">
+                0x4A81...B9C2
+              </div>
+              <div style="font-size:0.62rem; color:#94a3b8; margin-top:2px;">Registered into National Grain Grid Registry</div>
+            </div>
+          </div>
+
+          <!-- Quick Navigation Actions (cert-no-print) -->
+          <div class="cert-no-print" style="display:flex; gap:0.5rem;">
+            <button id="ob-modal-grid-btn" class="btn btn-secondary" style="padding:0.45rem 0.85rem; font-size:0.75rem;">
+              🛰️ View on Operations Grid
+            </button>
+            <button id="ob-modal-silo-btn" class="btn btn-primary" style="padding:0.45rem 0.85rem; font-size:0.75rem; background:#0284c7; border-color:#0284c7;">
+              🔬 Load in 3D Silo Twin
+            </button>
           </div>
         </div>
 
