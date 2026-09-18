@@ -1,3 +1,1 @@
-<?php
-require __DIR__ . '/_proxy.php';
-proxy_upstream('scan');
+<?php require __DIR__.'/_data.php'; api_init(); $b=api_body(); $key=(string)($b['preset_sample']??$_GET['preset_sample']??'wheat_high_moisture'); api_json(['status'=>'success','data'=>scan_sample($key)]);

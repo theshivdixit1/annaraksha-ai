@@ -1,3 +1,1 @@
-<?php
-require __DIR__ . '/_proxy.php';
-proxy_upstream('workorders');
+<?php require __DIR__.'/_data.php'; api_init(); api_json(static_response('workorders'));

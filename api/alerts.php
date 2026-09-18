@@ -1,3 +1,5 @@
-<?php
-require __DIR__ . '/_proxy.php';
-proxy_upstream('alerts');
+<?php require __DIR__.'/_data.php'; api_init(); try {
+ $sql="SELECT a.*,u.name unit_name,u.city,u.state,u.grain_type,u.risk_level,u.lat,u.lng FROM alerts a LEFT JOIN storage_units u ON a.unit_id=u.id ORDER BY a.id DESC LIMIT 20";
+ $rows=db()->query($sql)->fetchAll(); $out=[]; foreach($rows as $r){$t=strtotime($r['created_at']);$d=max(0,time()-$t);$ago=$d<60?'just now':($d<3600?floor($d/60).'m ago':floor($d/3600).'h ago');$out[]=['id'=>(int)$r['id'],'unit_id'=>(int)$r['unit_id'],'unit_name'=>$r['unit_name']?:'Unit #'.$r['unit_id'],'city'=>$r['city']?:'Regional Silo','state'=>$r['state']?:'India','grain_type'=>$r['grain_type']?:'Grain','risk_level'=>$r['risk_level']?:'watch','lat'=>$r['lat']===null?null:(float)$r['lat'],'lng'=>$r['lng']===null?null:(float)$r['lng'],'message'=>$r['message'],'severity'=>$r['severity'],'tonnes_at_risk'=>(int)$r['tonnes_at_risk'],'rupees_at_risk'=>(float)$r['rupees_at_risk'],'created_at'=>$r['created_at'],'time_ago'=>$ago];}
+ api_json(['status'=>'success','count'=>count($out),'simulated'=>true,'disclaimer'=>'Live Pilot Environment — Simulated Data','data'=>$out]);
+} catch(Throwable $e){api_json(['status'=>'error','message'=>'Internal server error fetching alerts'],500);}
