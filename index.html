@@ -58,23 +58,19 @@
   <!-- =========================================================================
        TOP INGESTION & LIVE ALERTS TICKER BAR
        ========================================================================= -->
-  <div class="ticker-bar" role="region" aria-label="Real-time Telemetry & Ingestion Feeds" style="position:relative; z-index:50;">
-    <div class="ticker-label">
+  <div class="ticker-bar" role="region" aria-label="Real-time Telemetry & Ingestion Feeds">
+    <div class="ticker-label" title="Real-time Telemetry & National Grid Telemetry Alerts">
       <span class="ticker-pulse"></span>
-      <span>National Grid Alerts</span>
+      <span class="ticker-title-text">Grid Alerts &amp; Market Sync</span>
     </div>
-    <div class="ticker-content" id="live-ticker-stream">
-      <span style="color:#94a3b8; font-size:0.75rem;">Connecting to national telemetry network...</span>
-    </div>
-    <!-- Live Agmarknet Stream -->
-    <div style="display:flex; align-items:center; gap:0.5rem; border-left:1px solid rgba(255,255,255,0.1); padding-left:0.75rem;">
-      <span style="color:#06b6d4; font-size:0.7rem; font-weight:700; text-transform:uppercase;">Agmarknet Mandis:</span>
-      <div id="hud-mandi-ticker" style="display:flex; gap:0.75rem; font-size:0.72rem;">
-        <span style="color:#94a3b8;">Syncing mandi feeds...</span>
+    <div class="ticker-viewport" id="ticker-viewport">
+      <div class="ticker-track" id="live-ticker-stream">
+        <span style="color:#94a3b8; font-size:0.75rem; padding-left:1rem;">Connecting to national telemetry network &amp; real-time market sync...</span>
       </div>
     </div>
-    <div style="font-size:0.7rem; color:#10b981; font-family:var(--font-mono); white-space:nowrap; margin-left:auto;">
-      ● LIVE SYNC
+    <div class="ticker-sync-status" title="Real-time Telemetry Stream Active">
+      <span class="sync-live-dot"></span>
+      <span>LIVE SYNC</span>
     </div>
   </div>
 
@@ -92,44 +88,54 @@
         <div>
           <div class="brand-title">
             <span>ANNARAKSHA AI</span>
-            <span class="hud-os-badge">OS 3.6 PRO</span>
+            <span class="hud-os-badge">NEURAL OS</span>
             <span class="hud-3d-indicator">3D ENGINE</span>
           </div>
           <div class="brand-sub">Bitexindustries &bull; Unbeatable Foods</div>
         </div>
       </div>
 
-      <!-- Unified HUD Navigation Tabs -->
-      <div class="hud-tabs-container" role="tablist">
-        <button class="hud-tab-btn active" data-target="view-grid">
-          <span>🛰️ Operations Grid</span>
+      <!-- Unified HUD Navigation Tabs (Slidable Carousel) -->
+      <div class="hud-features-nav-wrapper" id="hud-features-nav-wrapper">
+        <button class="hud-nav-arrow-btn hud-nav-arrow-left" id="hud-nav-arrow-left" aria-label="Slide features left" title="Slide features left">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
         </button>
-        <button class="hud-tab-btn" data-target="view-scanner">
-          <span>📸 AI Grain Scanner</span>
-        </button>
-        <button class="hud-tab-btn" data-target="view-workorders">
-          <span>⚡ Work Orders</span>
-        </button>
-        <button class="hud-tab-btn" data-target="view-valuechain">
-          <span>🏭 Value-Chain & Buyers</span>
-        </button>
-        <button class="hud-tab-btn" data-target="view-logistics">
-          <span>🚚 Transit & OCR</span>
-        </button>
-        <button class="hud-tab-btn" data-target="view-impact">
-          <span>📈 ESG Impact</span>
-        </button>
-        <button class="hud-tab-btn" data-target="view-directory">
-          <span>📋 Directory</span>
-        </button>
-        <button class="hud-tab-btn" data-target="view-onboarding" style="border-color:rgba(14,165,233,0.4); color:#38bdf8;">
-          <span>📥 Onboard Facility</span>
-        </button>
-        <button class="hud-tab-btn" data-target="view-silo">
-          <span>🔬 3D Silo Twin</span>
-        </button>
-        <button class="hud-tab-btn" data-target="view-spoilage">
-          <span>⏳ 2-Mo Spoilage Predictor</span>
+        <div class="hud-tabs-scroll-area" id="hud-tabs-scroll-area">
+          <div class="hud-tabs-container" role="tablist">
+            <button class="hud-tab-btn active" data-target="view-grid">
+              <span>🛰️ Operations Grid</span>
+            </button>
+            <button class="hud-tab-btn" data-target="view-scanner">
+              <span>📸 AI Grain Scanner</span>
+            </button>
+            <button class="hud-tab-btn" data-target="view-workorders">
+              <span>⚡ Work Orders</span>
+            </button>
+            <button class="hud-tab-btn" data-target="view-valuechain">
+              <span>🏭 Value-Chain & Buyers</span>
+            </button>
+            <button class="hud-tab-btn" data-target="view-logistics">
+              <span>🚚 Transit & OCR</span>
+            </button>
+            <button class="hud-tab-btn" data-target="view-impact">
+              <span>📈 ESG Impact</span>
+            </button>
+            <button class="hud-tab-btn" data-target="view-directory">
+              <span>📋 Directory</span>
+            </button>
+            <button class="hud-tab-btn" data-target="view-onboarding" style="border-color:rgba(14,165,233,0.4); color:#38bdf8;">
+              <span>📥 Onboard Facility</span>
+            </button>
+            <button class="hud-tab-btn" data-target="view-silo">
+              <span>🔬 3D Silo Twin</span>
+            </button>
+            <button class="hud-tab-btn" data-target="view-spoilage">
+              <span>⏳ 2-Mo Spoilage Predictor</span>
+            </button>
+          </div>
+        </div>
+        <button class="hud-nav-arrow-btn hud-nav-arrow-right" id="hud-nav-arrow-right" aria-label="Slide features right" title="Slide features right">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
         </button>
       </div>
 

@@ -70,27 +70,34 @@ body {
    Top Ingestion & Live Alerts Ticker
    ------------------------------------------------------------- */
 .ticker-bar {
-  background: #090e1a;
+  background: #070c18;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  height: 38px;
+  height: 42px;
+  min-height: 42px;
   display: flex;
   align-items: center;
-  padding: 0 1.25rem;
-  gap: 1rem;
+  padding: 0 0.85rem;
+  gap: 0.75rem;
   font-size: 0.75rem;
   overflow: hidden;
+  position: relative;
   z-index: 50;
 }
 
 .ticker-label {
   display: flex;
   align-items: center;
-  gap: 0.4rem;
-  font-weight: 700;
+  gap: 0.45rem;
+  font-weight: 800;
   text-transform: uppercase;
   color: var(--neon-cyan);
   letter-spacing: 0.06em;
   white-space: nowrap;
+  flex-shrink: 0;
+  padding-right: 0.75rem;
+  border-right: 1px solid rgba(255, 255, 255, 0.12);
+  z-index: 2;
+  background: #070c18;
 }
 
 .ticker-pulse {
@@ -100,50 +107,113 @@ body {
   background-color: var(--neon-crimson);
   box-shadow: 0 0 8px var(--neon-crimson);
   animation: pulse-glow 1.5s infinite;
+  flex-shrink: 0;
 }
 
-.ticker-content {
+.ticker-viewport {
   flex: 1;
+  position: relative;
+  overflow: hidden;
+  height: 100%;
   display: flex;
   align-items: center;
-  gap: 1.5rem;
-  overflow-x: auto;
-  white-space: nowrap;
-  scrollbar-width: none;
+  mask-image: linear-gradient(to right, transparent, black 20px, black calc(100% - 20px), transparent);
+  -webkit-mask-image: linear-gradient(to right, transparent, black 20px, black calc(100% - 20px), transparent);
 }
-.ticker-content::-webkit-scrollbar {
-  display: none;
+
+.ticker-track {
+  display: inline-flex;
+  align-items: center;
+  gap: 1.25rem;
+  white-space: nowrap;
+  will-change: transform;
+  animation: ticker-slide-infinite 68s linear infinite;
+}
+
+.ticker-viewport:hover .ticker-track,
+.ticker-track.is-paused {
+  animation-play-state: paused;
+}
+
+@keyframes ticker-slide-infinite {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
 }
 
 .ticker-item {
   display: inline-flex;
   align-items: center;
   gap: 0.45rem;
-  padding: 0.2rem 0.65rem;
+  padding: 0.22rem 0.75rem;
   background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.09);
   border-radius: 6px;
   cursor: pointer;
   transition: all 0.2s ease;
   color: #cbd5e1;
+  font-size: 0.73rem;
+  flex-shrink: 0;
 }
 
 .ticker-item:hover {
-  background: rgba(16, 185, 129, 0.15);
+  background: rgba(16, 185, 129, 0.2);
   border-color: var(--neon-emerald);
   color: #ffffff;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.25);
 }
 
 .ticker-item-critical {
-  border-color: rgba(244, 63, 94, 0.4);
-  background: rgba(244, 63, 94, 0.1);
+  border-color: rgba(244, 63, 94, 0.45);
+  background: rgba(244, 63, 94, 0.12);
   color: #fecdd3;
 }
 
 .ticker-item-warning {
-  border-color: rgba(245, 158, 11, 0.4);
-  background: rgba(245, 158, 11, 0.1);
+  border-color: rgba(245, 158, 11, 0.45);
+  background: rgba(245, 158, 11, 0.12);
   color: #fef3c7;
+}
+
+.ticker-item-mandi {
+  border-color: rgba(6, 182, 212, 0.35);
+  background: rgba(6, 182, 212, 0.08);
+  color: #e0f2fe;
+}
+
+.ticker-item-weather {
+  border-color: rgba(168, 85, 247, 0.35);
+  background: rgba(168, 85, 247, 0.08);
+  color: #f3e8ff;
+}
+
+.ticker-sync-status {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.68rem;
+  color: #10b981;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  white-space: nowrap;
+  flex-shrink: 0;
+  padding-left: 0.75rem;
+  border-left: 1px solid rgba(255, 255, 255, 0.12);
+  background: #070c18;
+  z-index: 2;
+}
+
+.sync-live-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 6px #10b981;
+  animation: pulse-glow 2s infinite;
 }
 
 /* -------------------------------------------------------------
@@ -298,43 +368,149 @@ body {
   box-shadow: 0 0 6px var(--neon-emerald);
 }
 
-/* HUD Navigation Tabs */
+/* Feature Navigation Slidable Carousel */
+.hud-features-nav-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  max-width: 100%;
+  min-width: 0;
+  flex: 1 1 auto;
+  overflow: hidden;
+  padding: 0 2px;
+}
+
+.hud-nav-arrow-btn {
+  width: 28px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 7px;
+  color: #38bdf8;
+  cursor: pointer;
+  z-index: 5;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+  padding: 0;
+  user-select: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+.hud-nav-arrow-btn:hover {
+  background: rgba(6, 182, 212, 0.22);
+  border-color: #06b6d4;
+  color: #ffffff;
+  box-shadow: 0 0 10px rgba(6, 182, 212, 0.45);
+}
+
+.hud-nav-arrow-btn:active {
+  transform: scale(0.92);
+}
+
+.hud-nav-arrow-btn.is-disabled {
+  opacity: 0.25;
+  cursor: default;
+  pointer-events: none;
+}
+
+.hud-tabs-scroll-area {
+  flex: 1 1 auto;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  margin: 0 0.35rem;
+  cursor: grab;
+  position: relative;
+}
+
+.hud-tabs-scroll-area.is-dragging {
+  cursor: grabbing;
+  user-select: none;
+  scroll-behavior: auto;
+}
+
+.hud-tabs-scroll-area::-webkit-scrollbar {
+  display: none;
+}
+
 .hud-tabs-container {
   display: flex;
   align-items: center;
-  background: rgba(7, 11, 20, 0.8);
+  background: rgba(7, 11, 20, 0.85);
   padding: 0.25rem;
   border-radius: 12px;
   border: 1px solid rgba(255, 255, 255, 0.1);
-  gap: 0.25rem;
+  gap: 0.35rem;
+  width: max-content;
 }
 
 .hud-tab-btn {
   display: inline-flex;
   align-items: center;
   gap: 0.45rem;
-  padding: 0.45rem 0.85rem;
+  padding: 0.5rem 0.85rem;
   font-size: 0.78rem;
   font-weight: 600;
   color: var(--text-secondary);
   background: transparent;
-  border: none;
+  border: 1px solid transparent;
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s ease;
   white-space: nowrap;
+  flex-shrink: 0;
+  min-height: 38px;
+  user-select: none;
 }
 
 .hud-tab-btn:hover {
   color: #ffffff;
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.12);
 }
 
 .hud-tab-btn.active {
   color: #ffffff;
-  background: linear-gradient(135deg, rgba(6, 182, 212, 0.2) 0%, rgba(16, 185, 129, 0.25) 100%);
-  border: 1px solid rgba(16, 185, 129, 0.4);
-  box-shadow: 0 0 10px rgba(16, 185, 129, 0.2);
+  background: linear-gradient(135deg, rgba(6, 182, 212, 0.22) 0%, rgba(16, 185, 129, 0.28) 100%);
+  border: 1px solid rgba(16, 185, 129, 0.45);
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.25);
+}
+
+@media (max-width: 1280px) {
+  .nav-container {
+    flex-wrap: wrap;
+    padding: 0.5rem 0.85rem;
+    gap: 0.6rem;
+  }
+  .hud-features-nav-wrapper {
+    order: 3;
+    width: 100%;
+    margin-top: 0.25rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .ticker-bar {
+    padding: 0 0.5rem;
+    gap: 0.5rem;
+    height: 38px;
+  }
+  .ticker-label {
+    padding-right: 0.5rem;
+  }
+  .ticker-label .ticker-title-text {
+    display: none;
+  }
+  .hud-tab-btn {
+    padding: 0.45rem 0.7rem;
+    font-size: 0.74rem;
+    min-height: 36px;
+  }
 }
 
 /* -------------------------------------------------------------
