@@ -173,7 +173,7 @@ class AnnarakshaDashboard {
 
   async loadUnits() {
     try {
-      const res = await fetch('/api/units');
+      const res = await fetch('/api/units.php');
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const json = await res.json();
       if (json.status === 'success' && Array.isArray(json.data)) {
@@ -835,7 +835,7 @@ class AnnarakshaDashboard {
     }
 
     try {
-      const res = await fetch(`/api/weather?unit_id=${u.id}`);
+      const res = await fetch(`/api/weather.php?unit_id=${u.id}`);
       const data = await res.json();
       if (data.status === 'success') {
         const cur = data.current_weather;
@@ -904,7 +904,7 @@ class AnnarakshaDashboard {
     </div>`;
 
     try {
-      const resp = await fetch('/api/copilot', {
+      const resp = await fetch('/api/copilot.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

@@ -20,7 +20,7 @@ class AlertTicker {
 
   async fetchAlerts() {
     try {
-      const res = await fetch('/api/alerts');
+      const res = await fetch('/api/alerts.php');
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const json = await res.json();
       if (json.status === 'success' && Array.isArray(json.data)) {

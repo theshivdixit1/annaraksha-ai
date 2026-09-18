@@ -216,7 +216,7 @@ class SpoilagePredictorEngine {
 
   async fetchNationalForecast() {
     try {
-      const res = await fetch('/api/spoilage-forecast');
+      const res = await fetch('/api/spoilage-forecast.php');
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       this.nationalData = data;
@@ -229,7 +229,7 @@ class SpoilagePredictorEngine {
 
   async populateUnitDropdown() {
     try {
-      const res = await fetch('/api/units');
+      const res = await fetch('/api/units.php');
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const json = await res.json();
       this.units = Array.isArray(json) ? json : (Array.isArray(json?.data) ? json.data : []);
@@ -382,7 +382,7 @@ class SpoilagePredictorEngine {
     }
 
     try {
-      const res = await fetch('/api/spoilage-forecast', {
+      const res = await fetch('/api/spoilage-forecast.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -598,7 +598,7 @@ class SpoilagePredictorEngine {
     }
 
     try {
-      const res = await fetch('/api/spoilage-forecast/update-arrival', {
+      const res = await fetch('/api/spoilage-forecast-update-arrival.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -788,7 +788,7 @@ class SpoilagePredictorEngine {
 
     // Fetch live forecast for this unit
     try {
-      const res = await fetch(`/api/spoilage-forecast?unit_id=${unit.id}`);
+      const res = await fetch(`/api/spoilage-forecast.php?unit_id=${unit.id}`);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const json = await res.json();
       const data = json.data || json;
@@ -870,7 +870,7 @@ class SpoilagePredictorEngine {
     }
 
     try {
-      const res = await fetch('/api/spoilage-forecast/update-arrival', {
+      const res = await fetch('/api/spoilage-forecast-update-arrival.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -917,7 +917,7 @@ class SpoilagePredictorEngine {
     }
 
     try {
-      const res = await fetch('/api/spoilage-forecast', {
+      const res = await fetch('/api/spoilage-forecast.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
