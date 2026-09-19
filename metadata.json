@@ -1,6 +1,6 @@
 {
   "name": "Annaraksha AI",
-  "description": "National AI-driven food grain wastage prevention platform integrating Agmarknet, IMD, satellite imagery, computer vision grain scanning, predictive spoilage analytics, and value-chain matchmaking.",
-  "requestFramePermissions": ["camera"],
+  "description": "National AI-driven food grain wastage prevention platform integrating Agmarknet, IMD, satellite imagery, computer vision grain scanning, predictive spoilage analytics, and real-time community hub with voice stages, group chat, and direct trading exchange.",
+  "requestFramePermissions": ["camera", "microphone"],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

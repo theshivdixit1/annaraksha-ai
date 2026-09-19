@@ -87,7 +87,330 @@ db.exec(`
     message TEXT NOT NULL,
     created_at TEXT DEFAULT CURRENT_TIMESTAMP
   );
+
+  -- ---------------------------------------------------------------------------
+  -- Community Hub Data Models (Voice Stages, Chat Stream, Deals & Bids)
+  -- ---------------------------------------------------------------------------
+  CREATE TABLE IF NOT EXISTS community_voice_rooms (
+    id TEXT PRIMARY KEY,
+    title TEXT NOT NULL,
+    room_type TEXT NOT NULL DEFAULT 'public',
+    target_role TEXT NOT NULL DEFAULT 'all',
+    host_name TEXT NOT NULL,
+    host_org TEXT NOT NULL,
+    description TEXT,
+    passkey TEXT,
+    is_active INTEGER DEFAULT 1,
+    listeners_count INTEGER DEFAULT 0,
+    active_speakers TEXT DEFAULT '[]',
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP
+  );
+
+  CREATE TABLE IF NOT EXISTS community_chat_messages (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    channel TEXT NOT NULL,
+    sender_name TEXT NOT NULL,
+    sender_role TEXT NOT NULL,
+    sender_org TEXT NOT NULL,
+    avatar_initials TEXT NOT NULL,
+    avatar_bg TEXT,
+    message TEXT NOT NULL,
+    attachment_type TEXT,
+    attachment_data TEXT,
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP
+  );
+
+  CREATE TABLE IF NOT EXISTS community_deals (
+    id TEXT PRIMARY KEY,
+    deal_type TEXT NOT NULL,
+    target_role TEXT NOT NULL,
+    title TEXT NOT NULL,
+    origin TEXT NOT NULL,
+    price_spec TEXT NOT NULL,
+    moisture_spec TEXT,
+    horizon TEXT,
+    volume_tonnes REAL DEFAULT 0,
+    urgent_label TEXT,
+    status TEXT DEFAULT 'active',
+    created_by TEXT,
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP
+  );
+
+  CREATE TABLE IF NOT EXISTS community_bids (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    deal_id TEXT NOT NULL,
+    bidder_name TEXT NOT NULL,
+    bidder_role TEXT NOT NULL,
+    bid_amount TEXT NOT NULL,
+    volume TEXT NOT NULL,
+    settlement_terms TEXT,
+    notes TEXT,
+    status TEXT DEFAULT 'pending',
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP
+  );
 `);
+
+// Seed Community Hub data if empty
+try {
+  const roomCount = (db.prepare('SELECT count(*) as cnt FROM community_voice_rooms').get() as any)?.cnt || 0;
+  if (roomCount === 0) {
+    console.log('[Community Hub] Seeding voice rooms...');
+    const insertRoom = db.prepare(`
+      INSERT INTO community_voice_rooms (id, title, room_type, target_role, host_name, host_org, description, passkey, listeners_count, active_speakers)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `);
+
+    insertRoom.run(
+      'room-1',
+      'Akola & Vidarbha Spoilage Rescue • Urgent Offtake Desk',
+      'public',
+      'producers',
+      'Dr. V. Deshmukh',
+      'Central Silo #28 / Bitex Milling',
+      'Moisture exceeded 16.5% in 3 CWC units due to unseasonal rain. Coordinating priority drying & processor offtake.',
+      null,
+      14,
+      JSON.stringify([
+        { id: 'spk-1', name: 'Dr. V. Deshmukh', role: 'Silo Manager', initials: 'VD', isSpeaking: true },
+        { id: 'spk-2', name: 'Amarjeet Singh', role: 'Fleet Owner', initials: 'AS', isSpeaking: false },
+        { id: 'spk-3', name: 'Rajesh Patidar', role: 'Processor Buyer', initials: 'RP', isSpeaking: false }
+      ])
+    );
+
+    insertRoom.run(
+      'room-2',
+      'NH-44 & NH-52 Return Freight & Diesel Toll Corridor',
+      'public',
+      'logistics',
+      'Gurinder Heavy Haulage',
+      'Indore Transport Union',
+      'Coordinating return empty freight from MP Godowns back to Punjab & Maharashtra mills to reduce deadhead miles.',
+      null,
+      8,
+      JSON.stringify([
+        { id: 'spk-4', name: 'Gurinder Singh', role: 'Truck Fleet Lead', initials: 'GS', isSpeaking: true },
+        { id: 'spk-5', name: 'Subhash Yadav', role: 'Driver Lead', initials: 'SY', isSpeaking: false }
+      ])
+    );
+
+    insertRoom.run(
+      'room-3',
+      'Indore Roller Flour Mills • Bulk Sharbati Tender Desk',
+      'private',
+      'processors',
+      'Procurement Directorate',
+      'CWC Indore / Bitex Food Trading',
+      'Confidential pricing auction for 3,000 Tonnes Grade-A Wheat stock with certified moisture under 11.5%.',
+      '2026',
+      5,
+      JSON.stringify([
+        { id: 'spk-6', name: 'Procurement Lead', role: 'Buyer', initials: 'IR', isSpeaking: false },
+        { id: 'spk-7', name: 'CWC Directorate', role: 'Warehouse Host', initials: 'CW', isSpeaking: false }
+      ])
+    );
+  }
+
+  const msgCount = (db.prepare('SELECT count(*) as cnt FROM community_chat_messages').get() as any)?.cnt || 0;
+  if (msgCount === 0) {
+    console.log('[Community Hub] Seeding initial stakeholder channel messages...');
+    const insertMsg = db.prepare(`
+      INSERT INTO community_chat_messages (channel, sender_name, sender_role, sender_org, avatar_initials, avatar_bg, message, attachment_type, attachment_data, created_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `);
+
+    // Storage Operators Channel
+    insertMsg.run(
+      'storage-operators',
+      'Silo #28 Akola Central',
+      'STORAGE UNIT',
+      'Central Warehousing Corp',
+      'SO',
+      'linear-gradient(135deg, #0284c7, #0369a1)',
+      'We just detected a core hot-spot in Silo Bin 4. Moisture has risen to 16.8%. Looking for immediate off-take of 400 MT or mobile mechanical grain dryer service.',
+      'cv-grain-scan',
+      JSON.stringify({
+        batchId: 'AGR-SCAN-88421',
+        commodity: 'Wheat (Kalyan Sona)',
+        moisture: '16.8% (Wet-basis)',
+        damaged: '7.2% Watch',
+        risk: 'CRITICAL DTS: 4 DAYS'
+      }),
+      '10:14 AM'
+    );
+
+    insertMsg.run(
+      'storage-operators',
+      'Narmada Roller Flour Mills Ltd',
+      'FOOD PROCESSOR',
+      'Narmada Agro Products',
+      'NF',
+      'linear-gradient(135deg, #10b981, #059669)',
+      '@Silo #28 Akola: We have active grinding line running at Dewas Industrial Estate. We can absorb 350 MT immediately at ₹2,340 / Qtl if transit reaches us within 24 hours before spoilage ferment sets in.',
+      'price-bid',
+      JSON.stringify({
+        bidRate: '₹2,340 / Qtl',
+        volume: '350 Tonnes (₹81.9 Lakhs)',
+        payment: 'T+0 Automated Clearing',
+        status: 'ESCROW VERIFIED'
+      }),
+      '10:18 AM'
+    );
+
+    insertMsg.run(
+      'storage-operators',
+      'Gurinder Heavy Freight Fleet',
+      'LOGISTICS',
+      'Indore Transporters Union',
+      'GT',
+      'linear-gradient(135deg, #f59e0b, #d97706)',
+      'We have 3x 35-Tonne covered multi-axle bulkers standing empty at Akola MIDC right now. Can roll to Silo #28 Gate in 40 minutes and deliver direct to Narmada Mills Dewas via NH-52.',
+      null,
+      null,
+      '10:21 AM'
+    );
+
+    insertMsg.run(
+      'storage-operators',
+      'Annaraksha Smart Value-Chain Engine',
+      'NEURAL BOT',
+      'Annaraksha Protocol',
+      'AI',
+      'linear-gradient(135deg, #6366f1, #4f46e5)',
+      '🛡️ Tri-Party Rescue Contract Formed: Silo #28 (Stock) + Narmada Mills (Offtake) + Gurinder Fleet (Transit). Spoilage averted: 350 MT of food grain saved from microbial rot.',
+      null,
+      null,
+      '10:22 AM'
+    );
+
+    // Food Processors Channel
+    insertMsg.run(
+      'food-processors',
+      'Malwa Agro Milling Ltd',
+      'FOOD PROCESSOR',
+      'Malwa Grains Co',
+      'MA',
+      'linear-gradient(135deg, #10b981, #059669)',
+      'Looking for 800 MT Grade-A Maize (Corn) with moisture <= 12%. Ready to clear immediately with verified bank guarantee.',
+      'price-bid',
+      JSON.stringify({
+        bidRate: '₹2,160 / Qtl',
+        volume: '800 MT Maize',
+        payment: 'Instant Bank Guarantee',
+        status: 'OPEN TENDER'
+      }),
+      '09:40 AM'
+    );
+
+    // Transport Drivers Channel
+    insertMsg.run(
+      'transport-drivers',
+      'All-India Truckers Consortium',
+      'LOGISTICS',
+      'National Highway 44 Logistics',
+      'TC',
+      'linear-gradient(135deg, #f59e0b, #d97706)',
+      'Route Alert: NH-52 near Sendhwa border has clear passage; zero congestion. Tarpaulin trucks recommended for all cereal transit due to overcast skies.',
+      null,
+      null,
+      '08:55 AM'
+    );
+
+    // Emergency Grain Rescue Channel
+    insertMsg.run(
+      'emergency-grain-rescue',
+      'Emergency Coordination Officer',
+      'NEURAL BOT',
+      'Annaraksha National Disaster Cell',
+      'EM',
+      'linear-gradient(135deg, #f43f5e, #e11d48)',
+      '🚨 Spoilage Warning Alert: Silo #41 Ujjain has a moisture spike to 17.1%. Emergency dispatch requested for mobile hot-air drying equipment or quick offtake before September 22.',
+      'cv-grain-scan',
+      JSON.stringify({
+        batchId: 'EMERG-UJJ-902',
+        commodity: 'Paddy / Rice (Common)',
+        moisture: '17.1% High Hazard',
+        damaged: '8.4%',
+        risk: 'URGENT RESCUE REQUIRED'
+      }),
+      '09:12 AM'
+    );
+  }
+
+  const dealCount = (db.prepare('SELECT count(*) as cnt FROM community_deals').get() as any)?.cnt || 0;
+  if (dealCount === 0) {
+    console.log('[Community Hub] Seeding initial trade exchange deals...');
+    const insertDeal = db.prepare(`
+      INSERT INTO community_deals (id, deal_type, target_role, title, origin, price_spec, moisture_spec, horizon, volume_tonnes, urgent_label, status, created_by, created_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `);
+
+    insertDeal.run(
+      'deal-1',
+      'grain-sale',
+      'producers',
+      'Wheat (Kalyan Sona) — 450 MT Lot',
+      'Central Silo #28, Akola • WDRA Validated',
+      '₹2,380 / Qtl',
+      '11.8% Safe Dry',
+      'Immediate Offtake (24H)',
+      450,
+      '⚡ IMMEDIATE OFFTAKE',
+      'active',
+      'Silo #28 Akola',
+      '10:00 AM'
+    );
+
+    insertDeal.run(
+      'deal-2',
+      'buyer-bid',
+      'processors',
+      'Seeking 1,200 Tonnes Maize (Corn)',
+      'Apex Agro Food Processing Ltd • Pithampur',
+      '₹2,160 / Qtl',
+      '≤ 12.5% wet-basis',
+      '48-Hour Offtake Window',
+      1200,
+      '⏳ 48H WINDOW',
+      'active',
+      'Apex Agro Processing',
+      '09:30 AM'
+    );
+
+    insertDeal.run(
+      'deal-3',
+      'logistics',
+      'logistics',
+      'Indore → Akola / Nagpur Corridor Return',
+      'Malwa Heavy Express • Verified GPS Tracking',
+      '₹2.10 / T-Km',
+      'Dedicated Covered Trailer',
+      'Standing Fleet Available',
+      240,
+      '● 8 TRUCKS STANDING',
+      'active',
+      'Malwa Heavy Express',
+      '09:15 AM'
+    );
+
+    insertDeal.run(
+      'deal-4',
+      'storage-lease',
+      'producers',
+      '1,500 MT Hermetic Nitrogen Silo Cell',
+      'Bhopal Integrated Grain Terminal Silo #14',
+      '₹82 / MT / Month',
+      '> 240 Days DTS Guarantee',
+      'Flexible 6-Month Lease',
+      1500,
+      'HERMETIC STORAGE',
+      'active',
+      'Bhopal Terminal #14',
+      '08:45 AM'
+    );
+  }
+} catch (e) {
+  console.warn('[Community Hub] Database schema/seed notice:', e);
+}
 
 // Check if storage_units has rows; if empty, seed from seed.sql
 const unitCountRow = db.prepare('SELECT count(*) as cnt FROM storage_units').get() as { cnt: number };
@@ -2059,6 +2382,661 @@ app.post('/api/spoilage-forecast/update-arrival', (req, res) => {
   } catch (err: any) {
     console.error('Error in /api/spoilage-forecast/update-arrival:', err);
     res.status(500).json({ status: 'error', message: err.message || 'Error updating stock arrival date' });
+  }
+});
+
+// -----------------------------------------------------------------------------
+// Agri-Community Hub & Trade Exchange Endpoints with Live Communication (SSE)
+// -----------------------------------------------------------------------------
+
+// Active SSE Connections Set
+const commSseClients = new Set<express.Response>();
+
+function broadcastCommunityEvent(eventType: string, payload: any) {
+  const data = `event: ${eventType}\ndata: ${JSON.stringify(payload)}\n\n`;
+  for (const client of commSseClients) {
+    try {
+      client.write(data);
+    } catch (err) {
+      commSseClients.delete(client);
+    }
+  }
+}
+
+// Keep-alive heartbeat every 20 seconds
+setInterval(() => {
+  for (const client of commSseClients) {
+    try {
+      client.write(': keepalive\n\n');
+    } catch {
+      commSseClients.delete(client);
+    }
+  }
+}, 20000);
+
+// SSE Event Stream Endpoint
+app.get('/api/community/events', (req, res) => {
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache, no-transform');
+  res.setHeader('Connection', 'keep-alive');
+  res.flushHeaders?.();
+
+  commSseClients.add(res);
+
+  // Send initial handshake
+  res.write(`event: connected\ndata: ${JSON.stringify({ timestamp: new Date().toISOString(), clientsCount: commSseClients.size })}\n\n`);
+
+  req.on('close', () => {
+    commSseClients.delete(res);
+  });
+});
+
+// 1. Consolidated State Hydration
+app.get('/api/community/state', (req, res) => {
+  try {
+    const rawRooms = (db.prepare('SELECT * FROM community_voice_rooms ORDER BY is_active DESC, created_at DESC').all() || []) as any[];
+    const rooms = rawRooms.map(r => ({
+      ...r,
+      active_speakers: typeof r.active_speakers === 'string' ? JSON.parse(r.active_speakers || '[]') : r.active_speakers
+    }));
+
+    const rawMsgs = (db.prepare('SELECT * FROM community_chat_messages ORDER BY id ASC').all() || []) as any[];
+    const channels: Record<string, any[]> = {
+      'storage-operators': [],
+      'food-processors': [],
+      'transport-drivers': [],
+      'emergency-grain-rescue': []
+    };
+
+    rawMsgs.forEach(m => {
+      const parsed = {
+        ...m,
+        attachment_data: m.attachment_data ? JSON.parse(m.attachment_data) : null
+      };
+      if (channels[m.channel]) {
+        channels[m.channel].push(parsed);
+      } else {
+        channels[m.channel] = [parsed];
+      }
+    });
+
+    const deals = (db.prepare('SELECT * FROM community_deals ORDER BY created_at DESC').all() || []) as any[];
+    const bids = (db.prepare('SELECT * FROM community_bids ORDER BY id DESC').all() || []) as any[];
+
+    // Compute live telemetry metrics
+    const totalListeners = rooms.reduce((acc, r) => acc + (Number(r.listeners_count) || 0), 0);
+    const activeRoomsCount = rooms.filter(r => r.is_active).length;
+
+    res.json({
+      status: 'success',
+      timestamp: new Date().toISOString(),
+      kpis: {
+        live_voice_rooms: activeRoomsCount,
+        online_listeners: totalListeners + 24, // includes connected listeners
+        active_deals: deals.length,
+        matched_volume_cr: 4.82,
+        online_stakeholders: 128
+      },
+      rooms,
+      channels,
+      deals,
+      bids
+    });
+  } catch (err: any) {
+    console.error('Error in /api/community/state:', err);
+    res.status(500).json({ status: 'error', message: err.message || 'Failed to fetch community hub state' });
+  }
+});
+
+// 2. Voice Room Endpoints
+app.get('/api/community/rooms', (req, res) => {
+  try {
+    const raw = (db.prepare('SELECT * FROM community_voice_rooms ORDER BY is_active DESC, created_at DESC').all() || []) as any[];
+    const rooms = raw.map(r => ({
+      ...r,
+      active_speakers: typeof r.active_speakers === 'string' ? JSON.parse(r.active_speakers || '[]') : r.active_speakers
+    }));
+    res.json({ status: 'success', rooms });
+  } catch (err: any) {
+    res.status(500).json({ status: 'error', message: err.message });
+  }
+});
+
+app.post('/api/community/rooms', (req, res) => {
+  try {
+    const { title, room_type, target_role, host_name, host_org, description, passkey } = req.body;
+    if (!title) {
+      res.status(400).json({ status: 'error', message: 'Room title is required' });
+      return;
+    }
+
+    const roomId = 'room-' + Date.now();
+    const isPrivate = room_type === 'private';
+    const finalPasskey = isPrivate ? (passkey || '2026') : null;
+    const initialSpeakers = JSON.stringify([
+      { id: 'spk-' + Date.now(), name: host_name || 'Station Operator', role: 'Host', initials: 'OP', isSpeaking: true }
+    ]);
+
+    const stmt = db.prepare(`
+      INSERT INTO community_voice_rooms (id, title, room_type, target_role, host_name, host_org, description, passkey, listeners_count, active_speakers)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `);
+
+    stmt.run(
+      roomId,
+      title,
+      room_type || 'public',
+      target_role || 'all',
+      host_name || 'Station Operator',
+      host_org || 'Central Storage Silo',
+      description || 'Community agricultural discussion desk',
+      finalPasskey,
+      1,
+      initialSpeakers
+    );
+
+    const created = db.prepare('SELECT * FROM community_voice_rooms WHERE id = ?').get(roomId) as any;
+    const roomPayload = {
+      ...created,
+      active_speakers: JSON.parse(created.active_speakers || '[]')
+    };
+
+    broadcastCommunityEvent('room_created', roomPayload);
+
+    res.json({
+      status: 'success',
+      message: 'Voice discussion room initiated successfully',
+      room: roomPayload
+    });
+  } catch (err: any) {
+    res.status(500).json({ status: 'error', message: err.message });
+  }
+});
+
+app.post('/api/community/rooms/:id/join', (req, res) => {
+  try {
+    const { id } = req.params;
+    const { passkey } = req.body;
+
+    const room = db.prepare('SELECT * FROM community_voice_rooms WHERE id = ?').get(id) as any;
+    if (!room) {
+      res.status(404).json({ status: 'error', message: 'Room not found' });
+      return;
+    }
+
+    if (room.room_type === 'private') {
+      if (!passkey || String(passkey).trim() !== String(room.passkey).trim()) {
+        res.status(403).json({ status: 'error', message: 'Invalid private room passkey' });
+        return;
+      }
+    }
+
+    db.prepare('UPDATE community_voice_rooms SET listeners_count = listeners_count + 1 WHERE id = ?').run(id);
+    const updated = db.prepare('SELECT * FROM community_voice_rooms WHERE id = ?').get(id) as any;
+    const roomPayload = {
+      ...updated,
+      active_speakers: JSON.parse(updated.active_speakers || '[]')
+    };
+
+    broadcastCommunityEvent('room_updated', roomPayload);
+
+    res.json({
+      status: 'success',
+      message: 'Joined voice stage',
+      room: roomPayload
+    });
+  } catch (err: any) {
+    res.status(500).json({ status: 'error', message: err.message });
+  }
+});
+
+app.post('/api/community/rooms/:id/leave', (req, res) => {
+  try {
+    const { id } = req.params;
+    db.prepare('UPDATE community_voice_rooms SET listeners_count = MAX(0, listeners_count - 1) WHERE id = ?').run(id);
+    const updated = db.prepare('SELECT * FROM community_voice_rooms WHERE id = ?').get(id) as any;
+    if (updated) {
+      broadcastCommunityEvent('room_updated', {
+        ...updated,
+        active_speakers: JSON.parse(updated.active_speakers || '[]')
+      });
+    }
+    res.json({ status: 'success', message: 'Left voice stage' });
+  } catch (err: any) {
+    res.status(500).json({ status: 'error', message: err.message });
+  }
+});
+
+// Live Voice Activity (Mic on/off & speech waves)
+app.post('/api/community/rooms/:id/voice-activity', (req, res) => {
+  try {
+    const { id } = req.params;
+    const { speaker_id, speaker_name, is_speaking } = req.body;
+
+    const room = db.prepare('SELECT * FROM community_voice_rooms WHERE id = ?').get(id) as any;
+    if (!room) {
+      res.status(404).json({ status: 'error', message: 'Room not found' });
+      return;
+    }
+
+    const speakers = JSON.parse(room.active_speakers || '[]');
+    const spk = speakers.find((s: any) => s.id === speaker_id || s.name === speaker_name);
+    if (spk) {
+      spk.isSpeaking = !!is_speaking;
+      db.prepare('UPDATE community_voice_rooms SET active_speakers = ? WHERE id = ?').run(JSON.stringify(speakers), id);
+    }
+
+    broadcastCommunityEvent('voice_activity', {
+      roomId: id,
+      speakerId: speaker_id,
+      speakerName: speaker_name,
+      isSpeaking: !!is_speaking
+    });
+
+    res.json({ status: 'success' });
+  } catch (err: any) {
+    res.status(500).json({ status: 'error', message: err.message });
+  }
+});
+
+// Live Hand Raise Queue
+app.post('/api/community/rooms/:id/raise-hand', (req, res) => {
+  try {
+    const { id } = req.params;
+    const { user_name, user_role, is_raised } = req.body;
+
+    broadcastCommunityEvent('hand_raised', {
+      roomId: id,
+      userName: user_name || 'Station Participant',
+      userRole: user_role || 'STORAGE OPERATOR',
+      isRaised: is_raised !== false,
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    });
+
+    res.json({ status: 'success', isRaised: is_raised !== false });
+  } catch (err: any) {
+    res.status(500).json({ status: 'error', message: err.message });
+  }
+});
+
+// Grant Speaker Privileges
+app.post('/api/community/rooms/:id/grant-speaker', (req, res) => {
+  try {
+    const { id } = req.params;
+    const { user_name, user_role } = req.body;
+
+    const room = db.prepare('SELECT * FROM community_voice_rooms WHERE id = ?').get(id) as any;
+    if (!room) {
+      res.status(404).json({ status: 'error', message: 'Room not found' });
+      return;
+    }
+
+    const speakers = JSON.parse(room.active_speakers || '[]');
+    const existing = speakers.find((s: any) => s.name === user_name);
+    if (!existing) {
+      const initials = (user_name || 'SP').split(' ').map((p: string) => p[0]).join('').slice(0, 2).toUpperCase();
+      speakers.push({
+        id: 'spk-' + Date.now(),
+        name: user_name || 'Guest Speaker',
+        role: user_role || 'Participant',
+        initials,
+        isSpeaking: false
+      });
+      db.prepare('UPDATE community_voice_rooms SET active_speakers = ? WHERE id = ?').run(JSON.stringify(speakers), id);
+    }
+
+    const updated = db.prepare('SELECT * FROM community_voice_rooms WHERE id = ?').get(id) as any;
+    const payload = {
+      ...updated,
+      active_speakers: JSON.parse(updated.active_speakers || '[]')
+    };
+
+    broadcastCommunityEvent('room_updated', payload);
+    broadcastCommunityEvent('speaker_granted', { roomId: id, userName: user_name });
+
+    res.json({ status: 'success', room: payload });
+  } catch (err: any) {
+    res.status(500).json({ status: 'error', message: err.message });
+  }
+});
+
+// 3. Chat Channel Endpoints
+app.get('/api/community/chat/:channel', (req, res) => {
+  try {
+    const { channel } = req.params;
+    const raw = (db.prepare('SELECT * FROM community_chat_messages WHERE channel = ? ORDER BY id ASC').all(channel) || []) as any[];
+    const messages = raw.map(m => ({
+      ...m,
+      attachment_data: m.attachment_data ? JSON.parse(m.attachment_data) : null
+    }));
+    res.json({ status: 'success', channel, messages });
+  } catch (err: any) {
+    res.status(500).json({ status: 'error', message: err.message });
+  }
+});
+
+app.post('/api/community/chat', (req, res) => {
+  try {
+    const { channel, sender_name, sender_role, sender_org, avatar_initials, avatar_bg, message, attachment_type, attachment_data } = req.body;
+    if (!channel || !message) {
+      res.status(400).json({ status: 'error', message: 'channel and message are required' });
+      return;
+    }
+
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+    const stmt = db.prepare(`
+      INSERT INTO community_chat_messages (channel, sender_name, sender_role, sender_org, avatar_initials, avatar_bg, message, attachment_type, attachment_data, created_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `);
+
+    const result = stmt.run(
+      channel,
+      sender_name || 'Station Operator',
+      sender_role || 'STORAGE UNIT',
+      sender_org || 'Silo #28 Akola',
+      avatar_initials || 'OP',
+      avatar_bg || 'linear-gradient(135deg, #0284c7, #0369a1)',
+      message,
+      attachment_type || null,
+      attachment_data ? JSON.stringify(attachment_data) : null,
+      timeStr
+    );
+
+    const insertedId = result.lastInsertRowid;
+    const created = db.prepare('SELECT * FROM community_chat_messages WHERE id = ?').get(insertedId) as any;
+    const messagePayload = {
+      ...created,
+      attachment_data: created.attachment_data ? JSON.parse(created.attachment_data) : null
+    };
+
+    broadcastCommunityEvent('chat_message', messagePayload);
+
+    res.json({
+      status: 'success',
+      message: messagePayload
+    });
+  } catch (err: any) {
+    res.status(500).json({ status: 'error', message: err.message });
+  }
+});
+
+// 4. Trade Exchange Deal & Bid Endpoints
+app.get('/api/community/deals', (req, res) => {
+  try {
+    const { type, role } = req.query;
+    let query = 'SELECT * FROM community_deals';
+    const params: any[] = [];
+    const conditions: string[] = [];
+
+    if (type && type !== 'all') {
+      conditions.push('deal_type = ?');
+      params.push(type);
+    }
+    if (role && role !== 'all') {
+      conditions.push('target_role = ?');
+      params.push(role);
+    }
+
+    if (conditions.length > 0) {
+      query += ' WHERE ' + conditions.join(' AND ');
+    }
+    query += ' ORDER BY created_at DESC';
+
+    const deals = db.prepare(query).all(...params);
+    res.json({ status: 'success', deals });
+  } catch (err: any) {
+    res.status(500).json({ status: 'error', message: err.message });
+  }
+});
+
+app.post('/api/community/deals', (req, res) => {
+  try {
+    const { deal_type, target_role, title, origin, price_spec, moisture_spec, horizon, volume_tonnes, urgent_label, created_by } = req.body;
+    if (!title || !price_spec || !origin) {
+      res.status(400).json({ status: 'error', message: 'title, origin, and price_spec are required' });
+      return;
+    }
+
+    const dealId = 'deal-' + Date.now();
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+    const stmt = db.prepare(`
+      INSERT INTO community_deals (id, deal_type, target_role, title, origin, price_spec, moisture_spec, horizon, volume_tonnes, urgent_label, status, created_by, created_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `);
+
+    stmt.run(
+      dealId,
+      deal_type || 'grain-sale',
+      target_role || 'producers',
+      title,
+      origin,
+      price_spec,
+      moisture_spec || 'Standard Spec',
+      horizon || 'Immediate Offtake (24H)',
+      Number(volume_tonnes) || 100,
+      urgent_label || '⚡ NEW SPOT OFFER',
+      'active',
+      created_by || 'Station Operator',
+      timeStr
+    );
+
+    const deal = db.prepare('SELECT * FROM community_deals WHERE id = ?').get(dealId);
+
+    // Broadcast new deal event
+    broadcastCommunityEvent('new_deal', deal);
+
+    // Cross-post deal alert into relevant stakeholder channel
+    const targetChannel = deal_type === 'grain-sale' ? 'storage-operators'
+      : deal_type === 'buyer-bid' ? 'food-processors'
+      : 'transport-drivers';
+
+    const announceStmt = db.prepare(`
+      INSERT INTO community_chat_messages (channel, sender_name, sender_role, sender_org, avatar_initials, avatar_bg, message, attachment_type, attachment_data, created_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `);
+
+    const announceRes = announceStmt.run(
+      targetChannel,
+      created_by || 'Station Operator',
+      deal_type === 'buyer-bid' ? 'FOOD PROCESSOR' : deal_type === 'logistics' ? 'LOGISTICS' : 'STORAGE UNIT',
+      origin,
+      'EX',
+      'linear-gradient(135deg, #0284c7, #0369a1)',
+      `📢 Published Spot Trade Offer: ${title} at ${price_spec}`,
+      'price-bid',
+      JSON.stringify({
+        bidRate: price_spec,
+        volume: `${volume_tonnes || 'Custom'} Tonnes`,
+        payment: 'Instant Escrow Available',
+        status: 'SPOT OFFER'
+      }),
+      timeStr
+    );
+
+    const announceMsg = db.prepare('SELECT * FROM community_chat_messages WHERE id = ?').get(announceRes.lastInsertRowid) as any;
+    if (announceMsg) {
+      broadcastCommunityEvent('chat_message', {
+        ...announceMsg,
+        attachment_data: announceMsg.attachment_data ? JSON.parse(announceMsg.attachment_data) : null
+      });
+    }
+
+    res.json({ status: 'success', message: 'Deal published to trade exchange', deal });
+  } catch (err: any) {
+    res.status(500).json({ status: 'error', message: err.message });
+  }
+});
+
+app.post('/api/community/deals/:id/bid', (req, res) => {
+  try {
+    const { id } = req.params;
+    const { bidder_name, bidder_role, bid_amount, volume, settlement_terms, notes } = req.body;
+
+    const deal = db.prepare('SELECT * FROM community_deals WHERE id = ?').get(id) as any;
+    if (!deal) {
+      res.status(404).json({ status: 'error', message: 'Deal not found' });
+      return;
+    }
+
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+    const stmt = db.prepare(`
+      INSERT INTO community_bids (deal_id, bidder_name, bidder_role, bid_amount, volume, settlement_terms, notes, status, created_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `);
+
+    const result = stmt.run(
+      id,
+      bidder_name || 'Station Operator',
+      bidder_role || 'Verified Stakeholder',
+      bid_amount || deal.price_spec,
+      volume || 'Full Lot',
+      settlement_terms || 'Instant T+0 Escrow Clearing via e-NAM',
+      notes || '',
+      'pending',
+      timeStr
+    );
+
+    const bid = db.prepare('SELECT * FROM community_bids WHERE id = ?').get(result.lastInsertRowid);
+
+    // Broadcast new bid event
+    broadcastCommunityEvent('new_bid', { deal, bid });
+
+    // Cross-post smart contract update to emergency or storage channel
+    const announceStmt = db.prepare(`
+      INSERT INTO community_chat_messages (channel, sender_name, sender_role, sender_org, avatar_initials, avatar_bg, message, attachment_type, attachment_data, created_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `);
+
+    const announceRes = announceStmt.run(
+      'storage-operators',
+      'Annaraksha Escrow Protocol',
+      'NEURAL BOT',
+      'Escrow Clearing Desk',
+      'ES',
+      'linear-gradient(135deg, #10b981, #059669)',
+      `⚡ Escrow Bid Transmitted on "${deal.title}": Bid Quote of ${bid_amount} for ${volume} by ${bidder_name || 'Station Operator'}. Status: Under Review.`,
+      'price-bid',
+      JSON.stringify({
+        bidRate: bid_amount,
+        volume: volume,
+        payment: settlement_terms,
+        status: 'BINDING ESCROW'
+      }),
+      timeStr
+    );
+
+    const announceMsg = db.prepare('SELECT * FROM community_chat_messages WHERE id = ?').get(announceRes.lastInsertRowid) as any;
+    if (announceMsg) {
+      broadcastCommunityEvent('chat_message', {
+        ...announceMsg,
+        attachment_data: announceMsg.attachment_data ? JSON.parse(announceMsg.attachment_data) : null
+      });
+    }
+
+    res.json({
+      status: 'success',
+      message: 'Escrow bid successfully transmitted',
+      bid
+    });
+  } catch (err: any) {
+    res.status(500).json({ status: 'error', message: err.message });
+  }
+});
+
+// 5. Cross-Module Spoilage Alert Broadcast Endpoint
+app.post('/api/community/broadcast-spoilage-alert', (req, res) => {
+  try {
+    const { unit_name, commodity, moisture, risk_level, required_action, volume_tonnes } = req.body;
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+    const batchId = 'EMERG-' + (commodity ? commodity.substring(0, 3).toUpperCase() : 'WHT') + '-' + Math.floor(100 + Math.random() * 900);
+
+    // 1. Post to #emergency-grain-rescue
+    const insertMsg = db.prepare(`
+      INSERT INTO community_chat_messages (channel, sender_name, sender_role, sender_org, avatar_initials, avatar_bg, message, attachment_type, attachment_data, created_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `);
+
+    const msgRes = insertMsg.run(
+      'emergency-grain-rescue',
+      'Annaraksha Spoilage Watchdog',
+      'NEURAL BOT',
+      unit_name || 'Storage Terminal Network',
+      'EM',
+      'linear-gradient(135deg, #f43f5e, #e11d48)',
+      `🚨 Critical Moisture Anomaly Detected: ${unit_name || 'Silo Storage'} reports ${moisture || '16.5%'} moisture in ${commodity || 'Food Grain'}. Immediate value-chain offtake or mobile drying required!`,
+      'cv-grain-scan',
+      JSON.stringify({
+        batchId,
+        commodity: commodity || 'Wheat Lot',
+        moisture: moisture || '16.8%',
+        damaged: '8.5%',
+        risk: risk_level || 'CRITICAL SPOILAGE RISK'
+      }),
+      timeStr
+    );
+
+    const chatMsg = db.prepare('SELECT * FROM community_chat_messages WHERE id = ?').get(msgRes.lastInsertRowid) as any;
+    if (chatMsg) {
+      broadcastCommunityEvent('chat_message', {
+        ...chatMsg,
+        attachment_data: chatMsg.attachment_data ? JSON.parse(chatMsg.attachment_data) : null
+      });
+    }
+
+    // 2. Auto-create an urgent rescue voice stage if not already exists
+    const emergencyRoomId = 'room-emerg-' + Date.now();
+    const insertRoom = db.prepare(`
+      INSERT INTO community_voice_rooms (id, title, room_type, target_role, host_name, host_org, description, passkey, listeners_count, active_speakers)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `);
+
+    insertRoom.run(
+      emergencyRoomId,
+      `🚨 Urgent Rescue Desk: ${unit_name || 'Storage Silo'} (${commodity || 'Grain'} Spoilage)`,
+      'public',
+      'all',
+      'Emergency Offtake Coordinator',
+      unit_name || 'Central Warehouse Corp',
+      `Moisture spike detected at ${moisture || 'elevated levels'}. Coordinating emergency haulage and milling offtake before ferment damage.`,
+      null,
+      4,
+      JSON.stringify([
+        { id: 'spk-em-1', name: 'Emergency Coordinator', role: 'Watchdog', initials: 'EC', isSpeaking: true },
+        { id: 'spk-em-2', name: 'Duty Inspector', role: 'Silo QC', initials: 'QC', isSpeaking: false }
+      ])
+    );
+
+    const room = db.prepare('SELECT * FROM community_voice_rooms WHERE id = ?').get(emergencyRoomId) as any;
+    const roomPayload = {
+      ...room,
+      active_speakers: JSON.parse(room.active_speakers || '[]')
+    };
+
+    broadcastCommunityEvent('room_created', roomPayload);
+    broadcastCommunityEvent('spoilage_alert', {
+      unit_name,
+      commodity,
+      moisture,
+      risk_level,
+      room_id: emergencyRoomId
+    });
+
+    res.json({
+      status: 'success',
+      message: 'Spoilage alert broadcasted to Community Hub and Emergency Voice Desk initiated',
+      room_id: emergencyRoomId,
+      chat_message_id: chatMsg?.id
+    });
+  } catch (err: any) {
+    res.status(500).json({ status: 'error', message: err.message });
   }
 });
 

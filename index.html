@@ -132,6 +132,11 @@
             <button class="hud-tab-btn" data-target="view-spoilage">
               <span>⏳ 2-Mo Spoilage Predictor</span>
             </button>
+            <button class="hud-tab-btn" data-target="view-community" id="hud-tab-community" style="border-color:rgba(16,185,129,0.45); color:#34d399; background:rgba(16,185,129,0.08);">
+              <span style="display:inline-flex; width:7px; height:7px; border-radius:50%; background:#10b981; box-shadow:0 0 8px #10b981; animation:pulse-glow 1.5s infinite;"></span>
+              <span>🎙️ Community Hub</span>
+              <span style="font-size:0.6rem; background:rgba(16,185,129,0.2); color:#10b981; padding:1px 5px; border-radius:999px; font-weight:800; border:1px solid rgba(16,185,129,0.4);">LIVE</span>
+            </button>
           </div>
         </div>
         <button class="hud-nav-arrow-btn hud-nav-arrow-right" id="hud-nav-arrow-right" aria-label="Slide features right" title="Slide features right">
@@ -141,6 +146,32 @@
 
       <!-- Feed Ingestion Health, Audio Synthesizer & Live Clock -->
       <div style="display:flex; align-items:center; gap:0.6rem;">
+        <!-- Prominent Circular Community Hub Entry Point -->
+        <div class="community-entry-wrapper" id="community-header-badge-container">
+          <button id="hud-community-badge" class="community-circular-badge" aria-label="Open Real-Time Agri-Community Hub & Trade Exchange" title="Agri-Community Hub • Live Voice Discussion, Chat & Direct Deal Exchange">
+            <div class="community-radar-ring"></div>
+            <div class="community-radar-ring-2"></div>
+            <div class="community-badge-inner">
+              <div class="community-badge-icon">
+                <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path>
+                  <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                  <line x1="12" y1="19" x2="12" y2="22"></line>
+                </svg>
+              </div>
+            </div>
+            <div class="community-badge-count-tag" title="Active Voice Stages & Deals">
+              <span class="badge-dot">●</span> 18 LIVE
+            </div>
+          </button>
+          <div class="community-badge-label-pill" id="hud-community-text-pill" title="Click to open Agri-Community Hub">
+            <span class="pill-voice-wave">
+              <span></span><span></span><span></span>
+            </span>
+            <span>COMMUNITY HUB</span>
+          </div>
+        </div>
+
         <button id="audio-toggle-btn" class="audio-hud-toggle" title="Toggle Futuristic Cyber Audio SFX">
           <span id="audio-icon">🔊</span>
           <span id="audio-label">SFX ON</span>
@@ -1640,6 +1671,524 @@
       </div>
     </div>
 
+    <!-- =======================================================================
+         MODULE 11: AGRI-COMMUNITY HUB & VALUE-CHAIN TRADE EXCHANGE
+         ======================================================================= -->
+    <div id="view-community" class="hud-module-pane" style="display:none; height:100%; overflow-y:auto; padding:1.25rem 1.5rem;">
+      <div class="comm-hub-wrapper">
+
+        <!-- Top Command Hero Banner -->
+        <div class="comm-hero-banner">
+          <div class="comm-banner-left">
+            <div class="comm-banner-icon">🌾</div>
+            <div>
+              <div class="comm-banner-title">
+                <span>Agri-Community Grid &amp; Trade Exchange</span>
+                <span class="hud-os-badge" style="border-color:rgba(16,185,129,0.5); color:#34d399; background:rgba(16,185,129,0.15);">
+                  ● REAL-TIME VOICE &amp; TRADING
+                </span>
+                <span class="hud-3d-indicator">WDRA / AGMARKNET VERIFIED</span>
+              </div>
+              <div class="comm-banner-sub">
+                Live voice stages, stakeholder communication channels, and direct spot trading connecting storage units, food processors, and transport haulers across India.
+              </div>
+            </div>
+          </div>
+
+          <!-- Live Telemetry KPI Strip -->
+          <div class="comm-kpi-strip">
+            <div class="comm-kpi-badge">
+              <span class="lbl">Voice Rooms</span>
+              <span class="val" style="color:#34d399;">3 Live (42 in Stage)</span>
+            </div>
+            <div class="comm-kpi-badge">
+              <span class="lbl">Chat Channels</span>
+              <span class="val" style="color:#38bdf8;">4 Groups (128 Online)</span>
+            </div>
+            <div class="comm-kpi-badge">
+              <span class="lbl">Live Deals Feed</span>
+              <span class="val" style="color:#fbbf24;">18 Active Offers</span>
+            </div>
+            <div class="comm-kpi-badge">
+              <span class="lbl">Today's Volume</span>
+              <span class="val" style="color:#f8fafc;">₹4.82 Cr Matched</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Stakeholder Role Switcher & Action Command Bar -->
+        <div class="comm-role-filter-bar">
+          <div class="comm-role-tabs">
+            <span style="font-size:0.68rem; color:#64748b; font-weight:700; text-transform:uppercase; margin-right:4px;">Filter by Stakeholder:</span>
+            <button class="comm-role-filter-btn active" data-role="all">
+              <span>🌐 All Ecosystem Roles</span>
+            </button>
+            <button class="comm-role-filter-btn" data-role="producers">
+              <span>🌾 Storage Units &amp; Silos (60)</span>
+            </button>
+            <button class="comm-role-filter-btn" data-role="processors">
+              <span>🏭 Food Processors &amp; Millers (38)</span>
+            </button>
+            <button class="comm-role-filter-btn" data-role="logistics">
+              <span>🚚 Logistics &amp; Haulers (52)</span>
+            </button>
+          </div>
+
+          <div class="comm-top-actions">
+            <button id="comm-btn-create-room" class="btn btn-secondary" style="padding:0.4rem 0.85rem; font-size:0.75rem; display:flex; align-items:center; gap:0.4rem; border-color:rgba(16,185,129,0.4); color:#34d399;">
+              <span>🎙️ Start Voice Room</span>
+            </button>
+            <button id="comm-btn-post-deal" class="btn btn-primary" style="padding:0.4rem 0.95rem; font-size:0.75rem; display:flex; align-items:center; gap:0.4rem; background:linear-gradient(135deg, #0284c7 0%, #0369a1 100%);">
+              <span>⚡ Post Deal / Offer</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Main 3-Column Tri-Grid: Voice Rooms, Group Chat, Instant Deals -->
+        <div class="comm-tri-grid">
+
+          <!-- =================================================================
+               COLUMN 1: LIVE VOICE DISCUSSION ROOMS & AUDIO STAGES
+               ================================================================= -->
+          <div class="comm-panel">
+            <div class="comm-panel-header">
+              <div class="comm-panel-title">
+                <span>🎙️ Live Voice Discussion</span>
+                <span class="hud-3d-indicator">OPUS HD</span>
+              </div>
+              <div class="comm-vfilter-tabs">
+                <button class="comm-vfilter-btn active" data-vfilter="all">All</button>
+                <button class="comm-vfilter-btn" data-vfilter="public">Public</button>
+                <button class="comm-vfilter-btn" data-vfilter="private">Private</button>
+              </div>
+            </div>
+
+            <!-- In-Room Active Voice Dock (Connected state controller) -->
+            <div id="comm-active-voice-dock" class="comm-active-voice-dock">
+              <div class="comm-dock-top">
+                <div style="display:flex; align-items:center; gap:0.45rem;">
+                  <span class="sync-live-dot"></span>
+                  <div id="comm-dock-room-title" class="comm-dock-title">Connected: Akola Spoilage Rescue</div>
+                </div>
+                <span style="font-size:0.62rem; color:#10b981; font-family:var(--font-mono); font-weight:700;">48kHz STEREO</span>
+              </div>
+
+              <div class="comm-dock-controls">
+                <button id="comm-dock-mic-btn" class="comm-dock-btn muted" title="Toggle Microphone">
+                  <span id="comm-dock-mic-icon">🔇</span>
+                  <span id="comm-dock-mic-label" class="dock-lbl">Muted</span>
+                </button>
+                <button id="comm-dock-hand-btn" class="comm-dock-btn" title="Raise hand to speak">
+                  <span>✋</span>
+                  <span class="dock-lbl">Raise Hand</span>
+                </button>
+                <button id="comm-dock-deafen-btn" class="comm-dock-btn" title="Toggle audio output">
+                  <span>🔊</span>
+                  <span class="dock-lbl">Audio On</span>
+                </button>
+                <button id="comm-dock-leave-btn" class="comm-dock-btn comm-dock-leave-btn" title="Leave voice room">
+                  <span>🔴</span>
+                  <span class="dock-lbl">Leave</span>
+                </button>
+              </div>
+
+              <!-- Real-time Voice Equalizer Waveform & Live Level Canvas -->
+              <div id="comm-dock-canvas-wrapper" class="comm-dock-canvas-wrapper" style="margin-top:0.4rem;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                  <div style="display:flex; align-items:center; gap:0.4rem;">
+                    <span id="comm-dock-live-dot" style="width:6px; height:6px; border-radius:50%; background:#10b981; display:inline-block; box-shadow:0 0 8px #10b981;"></span>
+                    <span style="font-size:0.62rem; color:#94a3b8; font-family:var(--font-mono); font-weight:700; text-transform:uppercase;">VOICE AUDIO DSP:</span>
+                    <span id="comm-dock-audio-mode" style="font-size:0.65rem; color:#38bdf8; font-family:var(--font-mono); font-weight:700;">LIVE ANALYSIS</span>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:0.4rem;">
+                    <button type="button" id="comm-dock-test-speech-btn" title="Simulate speaking burst to test real-time feedback" style="font-size:0.62rem; padding:1px 6px; background:rgba(6,182,212,0.15); border:1px solid rgba(6,182,212,0.4); border-radius:4px; color:#38bdf8; cursor:pointer; font-family:var(--font-mono);">
+                      ⚡ Test Voice Pulse
+                    </button>
+                    <span id="comm-dock-db-meter" style="font-size:0.62rem; font-family:var(--font-mono); color:#94a3b8; min-width:85px; text-align:right;">-inf dB (0%)</span>
+                    <div id="comm-dock-speaking-badge" class="comm-dock-speaking-badge badge-silent">
+                      SILENT
+                    </div>
+                  </div>
+                </div>
+
+                <!-- High-Definition Multi-Layer Canvas (Spectrum Equalizer + Oscilloscope + Peak Hold) -->
+                <canvas id="comm-dock-canvas" width="360" height="42" style="width:100%; height:42px; border-radius:4px; display:block; background:rgba(3, 7, 18, 0.6);"></canvas>
+
+                <!-- Audio VU Meter & Real-Time Noise Gate Level Strip -->
+                <div style="display:flex; align-items:center; gap:0.5rem; margin-top:2px;">
+                  <div style="flex:1; height:4px; background:rgba(255,255,255,0.06); border-radius:2px; overflow:hidden; position:relative;">
+                    <div id="comm-dock-vu-bar" style="width:0%; height:100%; background:linear-gradient(90deg, #06b6d4 0%, #10b981 60%, #f59e0b 85%, #ef4444 100%); transition:width 0.04s linear;"></div>
+                    <!-- Threshold Marker Line at 25% (Gate Open) -->
+                    <div style="position:absolute; left:22%; top:0; bottom:0; width:1.5px; background:rgba(255,255,255,0.4); z-index:2;" title="Noise Gate Threshold"></div>
+                  </div>
+                  <span id="comm-dock-active-speaker-tag" style="font-size:0.6rem; color:#64748b; font-family:var(--font-mono); white-space:nowrap;">ACTIVE: OPERATOR MIC</span>
+                </div>
+              </div>
+
+              <!-- Speaker & Raised Hands Queue -->
+              <div id="comm-dock-queue" style="display:none; margin-top:0.4rem; padding:0.4rem 0.6rem; background:rgba(245,158,11,0.08); border:1px solid rgba(245,158,11,0.3); border-radius:6px; font-size:0.72rem;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                  <span style="color:#fbbf24; font-weight:700;">✋ Hand Raised Queue:</span>
+                  <span id="comm-dock-queue-count" style="font-family:var(--font-mono); color:#fbbf24;">0 waiting</span>
+                </div>
+                <div id="comm-dock-queue-list" style="margin-top:0.3rem; display:flex; flex-direction:column; gap:0.25rem;"></div>
+              </div>
+            </div>
+
+            <!-- Voice Rooms List -->
+            <div id="comm-voice-rooms-list" class="comm-voice-rooms-list">
+
+              <!-- Room 1 (Public Spoilage Emergency) -->
+              <div class="comm-voice-card" data-room-id="room-1" data-room-type="public" data-target-role="producers">
+                <div class="comm-voice-header">
+                  <span class="comm-voice-badge comm-badge-live">🟢 PUBLIC STAGE • 14 LISTENING</span>
+                  <span class="comm-voice-role-tag">SILOS &amp; MILLERS</span>
+                </div>
+                <h4 class="comm-voice-title">Akola &amp; Vidarbha Spoilage Rescue • Urgent Offtake Desk</h4>
+                <div class="comm-voice-host">Hosted by <strong>Dr. V. Deshmukh</strong> (Silo #28) &bull; Bitex Milling</div>
+                <div style="font-size:0.72rem; color:#94a3b8; line-height:1.4;">
+                  Moisture exceeded 16.5% in 3 CWC units due to unseasonal rain. Coordinating priority drying &amp; processor offtake.
+                </div>
+                <div class="comm-voice-avatars-row">
+                  <div class="comm-speaker-avatar is-speaking" title="Speaking: Dr. V. Deshmukh">VD</div>
+                  <div class="comm-speaker-avatar" title="Amarjeet Singh (Truck Fleet)">AS</div>
+                  <div class="comm-speaker-avatar" title="Rajesh Patidar (Processor)">RP</div>
+                  <span class="comm-listeners-tag">+11 more listeners</span>
+                </div>
+                <button class="btn btn-primary comm-join-room-btn">
+                  <span>🎙️ Join Voice Stage</span>
+                </button>
+              </div>
+
+              <!-- Room 2 (Public Logistics & Haulers Corridor) -->
+              <div class="comm-voice-card" data-room-id="room-2" data-room-type="public" data-target-role="logistics">
+                <div class="comm-voice-header">
+                  <span class="comm-voice-badge comm-badge-live">🟢 PUBLIC STAGE • 8 TRUCKERS</span>
+                  <span class="comm-voice-role-tag">LOGISTICS &amp; DRIVERS</span>
+                </div>
+                <h4 class="comm-voice-title">NH-44 &amp; NH-52 Return Freight &amp; Diesel Toll Corridor</h4>
+                <div class="comm-voice-host">Hosted by <strong>Gurinder Heavy Haulage</strong> &bull; Indore Transport Union</div>
+                <div style="font-size:0.72rem; color:#94a3b8; line-height:1.4;">
+                  Coordinating return empty freight from MP Godowns back to Punjab &amp; Maharashtra mills to reduce deadhead miles.
+                </div>
+                <div class="comm-voice-avatars-row">
+                  <div class="comm-speaker-avatar is-speaking" title="Speaking: Gurinder Singh">GS</div>
+                  <div class="comm-speaker-avatar" title="Subhash Yadav">SY</div>
+                  <span class="comm-listeners-tag">+6 haulers active</span>
+                </div>
+                <button class="btn btn-primary comm-join-room-btn">
+                  <span>🎙️ Join Voice Stage</span>
+                </button>
+              </div>
+
+              <!-- Room 3 (Private Encrypted Institutional Negotiation) -->
+              <div class="comm-voice-card" data-room-id="room-3" data-room-type="private" data-target-role="processors">
+                <div class="comm-voice-header">
+                  <span class="comm-voice-badge comm-badge-private">🔒 PRIVATE DESK • PASSKEY REQ.</span>
+                  <span class="comm-voice-role-tag">ENTERPRISE BUYERS</span>
+                </div>
+                <h4 class="comm-voice-title">Indore Roller Flour Mills • Bulk Sharbati Tender Desk</h4>
+                <div class="comm-voice-host">Hosted by <strong>Procurement Directorate</strong> &bull; CWC Indore</div>
+                <div style="font-size:0.72rem; color:#94a3b8; line-height:1.4;">
+                  Confidential pricing auction for 3,000 Tonnes Grade-A Wheat stock with certified moisture under 11.5%.
+                </div>
+                <div class="comm-voice-avatars-row">
+                  <div class="comm-speaker-avatar" title="Host">IR</div>
+                  <div class="comm-speaker-avatar" title="CWC Lead">CW</div>
+                  <span class="comm-listeners-tag">Passkey: 2026</span>
+                </div>
+                <button class="btn btn-secondary comm-join-room-btn" style="border-color:rgba(245,158,11,0.4); color:#fbbf24;">
+                  <span>🔑 Enter Passkey to Join</span>
+                </button>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- =================================================================
+               COLUMN 2: REAL-TIME STAKEHOLDER GROUP CHAT HUB
+               ================================================================= -->
+          <div class="comm-panel" style="background:rgba(14,21,38,0.9);">
+            <div class="comm-panel-header">
+              <div class="comm-panel-title">
+                <span>💬 Stakeholder Group Chat</span>
+                <span id="comm-chat-active-title" style="font-size:0.75rem; color:#38bdf8; font-family:var(--font-mono); font-weight:600;">
+                  #storage-operators • CWC &amp; Silo Managers
+                </span>
+              </div>
+              <div style="font-size:0.68rem; color:#10b981; font-family:var(--font-mono); font-weight:700;">
+                ● 28 ONLINE
+              </div>
+            </div>
+
+            <!-- Group Chat Channel Tabs -->
+            <div class="comm-chat-channel-bar">
+              <button class="comm-channel-tab-btn active" data-channel="storage-operators">
+                <span>🌾 #storage-operators</span>
+                <span class="comm-unread-badge">3</span>
+              </button>
+              <button class="comm-channel-tab-btn" data-channel="food-processors">
+                <span>🏭 #food-processors</span>
+              </button>
+              <button class="comm-channel-tab-btn" data-channel="transport-drivers">
+                <span>🚚 #transport-drivers</span>
+              </button>
+              <button class="comm-channel-tab-btn" data-channel="emergency-grain-rescue">
+                <span>⚡ #emergency-grain-rescue</span>
+                <span class="comm-unread-badge" style="background:#f59e0b;">1</span>
+              </button>
+            </div>
+
+            <!-- Chat Message Stream -->
+            <div id="comm-chat-messages-container" class="comm-chat-stream">
+
+              <!-- Message 1 (Storage Unit) -->
+              <div class="comm-chat-msg" data-channel="storage-operators">
+                <div class="comm-chat-avatar" style="background:linear-gradient(135deg, #0284c7, #0369a1);">SO</div>
+                <div class="comm-chat-content">
+                  <div class="comm-chat-meta">
+                    <span class="comm-chat-sender">Silo #28 Akola Central</span>
+                    <span class="comm-chat-role-pill" style="border-color:#38bdf8; color:#38bdf8;">STORAGE UNIT</span>
+                    <span class="comm-chat-time">10:14 AM</span>
+                  </div>
+                  <div class="comm-chat-body">
+                    We just detected a core hot-spot in Silo Bin 4. Moisture has risen to <strong>16.8%</strong>. Looking for immediate off-take of 400 MT or mobile mechanical grain dryer service.
+                  </div>
+                  <!-- Rich Grain Scan Attachment Card -->
+                  <div class="comm-chat-rich-card">
+                    <div class="comm-chat-rich-header">
+                      <span>📸 Attached CV Grain Scan: Batch #AGR-SCAN-88421</span>
+                      <span style="color:#f43f5e; font-weight:800;">CRITICAL DTS: 4 DAYS</span>
+                    </div>
+                    <div class="comm-chat-rich-grid">
+                      <div><strong>Commodity:</strong> Wheat (Kalyan Sona)</div>
+                      <div><strong>Moisture:</strong> 16.8% (Wet-basis)</div>
+                      <div><strong>Damaged:</strong> 7.2% Watch</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Message 2 (Food Processor Buyer) -->
+              <div class="comm-chat-msg" data-channel="storage-operators">
+                <div class="comm-chat-avatar" style="background:linear-gradient(135deg, #10b981, #059669);">NF</div>
+                <div class="comm-chat-content">
+                  <div class="comm-chat-meta">
+                    <span class="comm-chat-sender">Narmada Roller Flour Mills Ltd</span>
+                    <span class="comm-chat-role-pill" style="border-color:#10b981; color:#10b981;">FOOD PROCESSOR</span>
+                    <span class="comm-chat-time">10:18 AM</span>
+                  </div>
+                  <div class="comm-chat-body">
+                    @Silo #28 Akola: We have active grinding line running at Dewas Industrial Estate. We can absorb 350 MT immediately at <strong>₹2,340 / Qtl</strong> if transit reaches us within 24 hours before spoilage ferment sets in.
+                  </div>
+                  <!-- Rich Price Bid Card -->
+                  <div class="comm-chat-rich-card" style="border-color:rgba(16,185,129,0.4);">
+                    <div class="comm-chat-rich-header" style="color:#34d399;">
+                      <span>⚡ Instant Procurement Bid: Narmada Mills</span>
+                      <span>ESCROW VERIFIED</span>
+                    </div>
+                    <div class="comm-chat-rich-grid">
+                      <div><strong>Bid Rate:</strong> ₹2,340 / Qtl</div>
+                      <div><strong>Volume:</strong> 350 Tonnes (₹81.9 Lakhs)</div>
+                      <div><strong>Payment:</strong> T+0 Automated Clearing</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Message 3 (Transport Driver / Logistics Fleet) -->
+              <div class="comm-chat-msg" data-channel="storage-operators">
+                <div class="comm-chat-avatar" style="background:linear-gradient(135deg, #f59e0b, #d97706);">GT</div>
+                <div class="comm-chat-content">
+                  <div class="comm-chat-meta">
+                    <span class="comm-chat-sender">Gurinder Heavy Freight Fleet</span>
+                    <span class="comm-chat-role-pill" style="border-color:#f59e0b; color:#f59e0b;">LOGISTICS</span>
+                    <span class="comm-chat-time">10:21 AM</span>
+                  </div>
+                  <div class="comm-chat-body">
+                    We have 3x 35-Tonne covered multi-axle bulkers standing empty at Akola MIDC right now. Can roll to Silo #28 Gate in 40 minutes and deliver direct to Narmada Mills Dewas via NH-52.
+                  </div>
+                </div>
+              </div>
+
+              <!-- Message 4 (System Smart Matchmaker) -->
+              <div class="comm-chat-msg" data-channel="storage-operators">
+                <div class="comm-chat-avatar" style="background:linear-gradient(135deg, #6366f1, #4f46e5);">AI</div>
+                <div class="comm-chat-content">
+                  <div class="comm-chat-meta">
+                    <span class="comm-chat-sender">Annaraksha Smart Value-Chain Engine</span>
+                    <span class="comm-chat-role-pill" style="border-color:#818cf8; color:#818cf8;">NEURAL BOT</span>
+                    <span class="comm-chat-time">10:22 AM</span>
+                  </div>
+                  <div class="comm-chat-body" style="color:#e0e7ff; font-size:0.8rem;">
+                    🛡️ <strong>Tri-Party Rescue Contract Formed:</strong> Silo #28 (Stock) + Narmada Mills (Offtake) + Gurinder Fleet (Transit). Spoilage averted: 350 MT of food grain saved from microbial rot.
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Chat Input Area with Quick Action Snippets -->
+            <div class="comm-chat-input-area">
+              <div class="comm-quick-chips-row">
+                <span class="comm-quick-chip" data-snippet="Interested in buying this lot. Can you confirm moisture certification?">Confirm Moisture</span>
+                <span class="comm-quick-chip" data-snippet="We have 2 trucks available for immediate dispatch.">Offer Trucks</span>
+                <span class="comm-quick-chip" data-snippet="Submitting direct bid at current Mandi MSP rate.">Bid MSP Rate</span>
+                <span class="comm-quick-chip" data-snippet="Requesting WDRA digital laboratory inspection report.">Request Inspection</span>
+              </div>
+              <form id="comm-chat-form" class="comm-chat-form">
+                <input type="text" id="comm-chat-input" class="comm-chat-input" placeholder="Type a message, drop a price quote, or share grain lot ID..." required autocomplete="off" />
+                <button type="submit" class="btn btn-primary" style="padding:0.4rem 0.85rem; font-size:0.75rem; display:flex; align-items:center; gap:0.35rem;">
+                  <span>Send</span>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                </button>
+              </form>
+            </div>
+
+          </div>
+
+          <!-- =================================================================
+               COLUMN 3: INSTANT DEAL-MAKING & TRADING FEED
+               ================================================================= -->
+          <div class="comm-panel">
+            <div class="comm-panel-header">
+              <div class="comm-panel-title">
+                <span>⚡ Instant Deal &amp; Trade Feed</span>
+                <span class="hud-3d-indicator" style="border-color:rgba(245,158,11,0.4); color:#fbbf24; background:rgba(245,158,11,0.15);">
+                  18 SPOT DEALS
+                </span>
+              </div>
+              <div class="comm-deal-filters">
+                <button class="comm-deal-filter-btn active" data-dfilter="all">All</button>
+                <button class="comm-deal-filter-btn" data-dfilter="grain-sale">Grain</button>
+                <button class="comm-deal-filter-btn" data-dfilter="buyer-bid">Bids</button>
+                <button class="comm-deal-filter-btn" data-dfilter="logistics">Freight</button>
+              </div>
+            </div>
+
+            <!-- Deals Feed List -->
+            <div id="comm-deals-feed-list" class="comm-deals-feed-list">
+
+              <!-- Deal 1: Grain for Sale (Storage Unit Selling) -->
+              <div class="comm-deal-card" data-deal-type="grain-sale" data-deal-role="producers">
+                <div class="comm-deal-top">
+                  <span class="comm-deal-badge grain-sale">🌾 SPOT GRAIN OFFER</span>
+                  <span class="comm-deal-urgent">⚡ IMMEDIATE OFFTAKE</span>
+                </div>
+                <h4 class="comm-deal-title">Wheat (Kalyan Sona) — 450 MT</h4>
+                <div class="comm-deal-origin">📍 Central Silo #28, Akola &bull; WDRA Validated</div>
+                <div class="comm-deal-metrics">
+                  <div class="comm-metric-box">
+                    <div class="lbl">Asking Price</div>
+                    <div class="val comm-deal-price-val">₹2,380 / Qtl</div>
+                  </div>
+                  <div class="comm-metric-box">
+                    <div class="lbl">Moisture Spec</div>
+                    <div class="val" style="color:#10b981;">11.8% Safe Dry</div>
+                  </div>
+                </div>
+                <div class="comm-deal-actions">
+                  <button class="btn btn-primary comm-deal-bid-btn" style="flex:1; font-size:0.75rem; padding:0.4rem;">
+                    ⚡ Instant Bid
+                  </button>
+                  <button class="btn btn-secondary" style="font-size:0.75rem; padding:0.4rem;" onclick="window.agriCommunityHub?.switchChatChannel('storage-operators')">
+                    💬 Chat Silo
+                  </button>
+                </div>
+              </div>
+
+              <!-- Deal 2: Food Processor Procurement Bid -->
+              <div class="comm-deal-card" data-deal-type="buyer-bid" data-deal-role="processors">
+                <div class="comm-deal-top">
+                  <span class="comm-deal-badge buyer-bid">🏭 BUYER PURCHASE BID</span>
+                  <span class="comm-deal-urgent" style="color:#38bdf8;">⏳ 48H WINDOW</span>
+                </div>
+                <h4 class="comm-deal-title">Seeking 1,200 Tonnes Maize (Corn)</h4>
+                <div class="comm-deal-origin">📍 Apex Agro Food Processing Ltd &bull; Pithampur</div>
+                <div class="comm-deal-metrics">
+                  <div class="comm-metric-box">
+                    <div class="lbl">Bid Offer</div>
+                    <div class="val comm-deal-price-val" style="color:#38bdf8;">₹2,160 / Qtl</div>
+                  </div>
+                  <div class="comm-metric-box">
+                    <div class="lbl">Max Moisture</div>
+                    <div class="val">&le; 12.5% wet-basis</div>
+                  </div>
+                </div>
+                <div class="comm-deal-actions">
+                  <button class="btn btn-primary comm-deal-bid-btn" style="flex:1; font-size:0.75rem; padding:0.4rem; background:linear-gradient(135deg, #0284c7 0%, #0369a1 100%);">
+                    🤝 Accept Bid / Offer Lot
+                  </button>
+                  <button class="btn btn-secondary" style="font-size:0.75rem; padding:0.4rem;" onclick="window.agriCommunityHub?.switchChatChannel('food-processors')">
+                    💬 Buyer
+                  </button>
+                </div>
+              </div>
+
+              <!-- Deal 3: Logistics Provider Available Return Freight -->
+              <div class="comm-deal-card" data-deal-type="logistics" data-deal-role="logistics">
+                <div class="comm-deal-top">
+                  <span class="comm-deal-badge logistics">🚚 FREIGHT CAPACITY</span>
+                  <span class="comm-deal-urgent" style="color:#10b981;">● 8 TRUCKS STANDING</span>
+                </div>
+                <h4 class="comm-deal-title">Indore → Akola / Nagpur Corridor Return</h4>
+                <div class="comm-deal-origin">📍 Malwa Heavy Express &bull; Verified GPS Tracking</div>
+                <div class="comm-deal-metrics">
+                  <div class="comm-metric-box">
+                    <div class="lbl">Freight Rate</div>
+                    <div class="val comm-deal-price-val" style="color:#fbbf24;">₹2.10 / T-Km</div>
+                  </div>
+                  <div class="comm-metric-box">
+                    <div class="lbl">Payload</div>
+                    <div class="val">240 MT Total</div>
+                  </div>
+                </div>
+                <div class="comm-deal-actions">
+                  <button class="btn btn-primary comm-deal-bid-btn" style="flex:1; font-size:0.75rem; padding:0.4rem; background:linear-gradient(135deg, #d97706 0%, #b45309 100%);">
+                    📦 Book Fleet Now
+                  </button>
+                  <button class="btn btn-secondary" style="font-size:0.75rem; padding:0.4rem;" onclick="window.agriCommunityHub?.switchChatChannel('transport-drivers')">
+                    📞 Dispatch
+                  </button>
+                </div>
+              </div>
+
+              <!-- Deal 4: Silo Space Spot Lease -->
+              <div class="comm-deal-card" data-deal-type="grain-sale" data-deal-role="producers">
+                <div class="comm-deal-top">
+                  <span class="comm-deal-badge storage-lease">📦 SILO LEASE CAPACITY</span>
+                  <span class="comm-deal-urgent" style="color:#c084fc;">HERMETIC STORAGE</span>
+                </div>
+                <h4 class="comm-deal-title">1,500 MT Hermetic Nitrogen Silo Cell</h4>
+                <div class="comm-deal-origin">📍 Bhopal Integrated Grain Terminal Silo #14</div>
+                <div class="comm-deal-metrics">
+                  <div class="comm-metric-box">
+                    <div class="lbl">Rental Tariff</div>
+                    <div class="val comm-deal-price-val">₹82 / MT / Month</div>
+                  </div>
+                  <div class="comm-metric-box">
+                    <div class="lbl">Safe Horizon</div>
+                    <div class="val" style="color:#10b981;">&gt; 240 Days DTS</div>
+                  </div>
+                </div>
+                <div class="comm-deal-actions">
+                  <button class="btn btn-primary comm-deal-bid-btn" style="flex:1; font-size:0.75rem; padding:0.4rem; background:linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);">
+                    🔒 Reserve Space
+                  </button>
+                  <button class="btn btn-secondary" style="font-size:0.75rem; padding:0.4rem;">
+                    📑 Terms
+                  </button>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+
   <!-- Scripts -->
   <script src="js/futuristic-fx.js"></script>
   <script src="js/silo-3d.js"></script>
@@ -1651,6 +2200,7 @@
   <script src="js/dashboard.js"></script>
   <script src="js/spoilage-predictor.js"></script>
   <script src="js/onboarding.js"></script>
+  <script src="js/community-hub.js"></script>
   <script src="js/futuristic-app.js"></script>
   <script src="js/moisture-chart.bundle.js"></script>
 
@@ -2366,6 +2916,197 @@
         </div>
 
       </div>
+    </div>
+  </div>
+
+  <!-- =======================================================================
+       COMMUNITY HUB MODALS: VOICE ROOM, POST DEAL & BID DIALOG
+       ======================================================================= -->
+
+  <!-- 1. Start Voice Room Modal -->
+  <div id="comm-create-room-modal" class="comm-modal-backdrop">
+    <div class="comm-modal-box">
+      <div class="comm-modal-header">
+        <div style="display:flex; align-items:center; gap:0.5rem;">
+          <span style="font-size:1.2rem;">🎙️</span>
+          <h3 style="font-size:1.05rem; font-weight:800; color:#f8fafc; margin:0;">Start Agri-Voice Discussion Room</h3>
+        </div>
+        <button id="comm-btn-close-room-modal" class="ob-btn-icon" style="background:transparent; border:none; color:#94a3b8; font-size:1.2rem; cursor:pointer;">&times;</button>
+      </div>
+      <form id="comm-create-room-form" class="comm-modal-body">
+        <div>
+          <label style="display:block; font-size:0.72rem; color:#94a3b8; font-weight:700; margin-bottom:4px;">ROOM TOPIC / AGENDA</label>
+          <input type="text" id="comm-input-room-title" class="hud-form-input" style="width:100%;" placeholder="e.g. Malwa Wheat Moisture Spike Emergency Coordination" required />
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem;">
+          <div>
+            <label style="display:block; font-size:0.72rem; color:#94a3b8; font-weight:700; margin-bottom:4px;">ROOM ACCESS</label>
+            <select id="comm-select-room-type" class="hud-form-select" style="width:100%;">
+              <option value="public">🟢 Public Broadcast Stage</option>
+              <option value="private">🔒 Private Protected Desk</option>
+            </select>
+          </div>
+          <div>
+            <label style="display:block; font-size:0.72rem; color:#94a3b8; font-weight:700; margin-bottom:4px;">PRIMARY AUDIENCE</label>
+            <select id="comm-select-room-role" class="hud-form-select" style="width:100%;">
+              <option value="producers">🌾 Storage Units &amp; Silo Managers</option>
+              <option value="processors">🏭 Food Processors &amp; Millers</option>
+              <option value="logistics">🚚 Freight Haulers &amp; Truckers</option>
+            </select>
+          </div>
+        </div>
+        <div id="comm-passkey-group" style="display:none;">
+          <label style="display:block; font-size:0.72rem; color:#fbbf24; font-weight:700; margin-bottom:4px;">ROOM PASSKEY (PIN)</label>
+          <input type="text" id="comm-input-room-passkey" class="hud-form-input" style="width:100%; border-color:rgba(245,158,11,0.5);" placeholder="Enter 4-digit secret PIN for private attendees" />
+        </div>
+        <div>
+          <label style="display:block; font-size:0.72rem; color:#94a3b8; font-weight:700; margin-bottom:4px;">AGENDA SUMMARY / NOTES</label>
+          <textarea id="comm-input-room-desc" class="hud-form-input" style="width:100%; height:70px; resize:none;" placeholder="Brief details about target commodities, volumes, or logistical routes..."></textarea>
+        </div>
+        <div style="display:flex; justify-content:flex-end; gap:0.5rem; margin-top:0.5rem;">
+          <button type="button" id="comm-btn-cancel-room" class="btn btn-secondary">Cancel</button>
+          <button type="submit" class="btn btn-primary" style="background:linear-gradient(135deg, #10b981 0%, #059669 100%); border-color:#10b981;">
+            <span>🎙️ Launch Voice Room</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 2. Post New Deal Modal -->
+  <div id="comm-post-deal-modal" class="comm-modal-backdrop">
+    <div class="comm-modal-box" style="max-width:620px;">
+      <div class="comm-modal-header">
+        <div style="display:flex; align-items:center; gap:0.5rem;">
+          <span style="font-size:1.2rem;">⚡</span>
+          <h3 style="font-size:1.05rem; font-weight:800; color:#f8fafc; margin:0;">Post Value-Chain Deal / Trading Offer</h3>
+        </div>
+        <button id="comm-btn-close-deal-modal" class="ob-btn-icon" style="background:transparent; border:none; color:#94a3b8; font-size:1.2rem; cursor:pointer;">&times;</button>
+      </div>
+      <form id="comm-post-deal-form" class="comm-modal-body">
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem;">
+          <div>
+            <label style="display:block; font-size:0.72rem; color:#94a3b8; font-weight:700; margin-bottom:4px;">DEAL CATEGORY</label>
+            <select id="comm-deal-type" class="hud-form-select" style="width:100%;">
+              <option value="grain-sale">🌾 Spot Grain for Sale (Offer)</option>
+              <option value="buyer-bid">🏭 Food Processor Procurement Bid</option>
+              <option value="logistics">🚚 Available Freight / Truck Haulage</option>
+            </select>
+          </div>
+          <div>
+            <label style="display:block; font-size:0.72rem; color:#94a3b8; font-weight:700; margin-bottom:4px;">STAKEHOLDER TYPE</label>
+            <select id="comm-deal-role" class="hud-form-select" style="width:100%;">
+              <option value="producers">Storage Unit / Silo Facility</option>
+              <option value="processors">Food Processor / Flour Mill</option>
+              <option value="logistics">Transporter / Fleet Owner</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label style="display:block; font-size:0.72rem; color:#94a3b8; font-weight:700; margin-bottom:4px;">DEAL TITLE &amp; COMMODITY / ROUTE</label>
+          <input type="text" id="comm-deal-title" class="hud-form-input" style="width:100%;" placeholder="e.g. Wheat (Sharbati Grade-A) — 500 MT Lot" required />
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem;">
+          <div>
+            <label style="display:block; font-size:0.72rem; color:#94a3b8; font-weight:700; margin-bottom:4px;">ORIGIN / LOCATION FACILITY</label>
+            <input type="text" id="comm-deal-origin" class="hud-form-input" style="width:100%;" placeholder="e.g. Central Silo #12, Ujjain" required />
+          </div>
+          <div>
+            <label style="display:block; font-size:0.72rem; color:#94a3b8; font-weight:700; margin-bottom:4px;">UNIT PRICE OR FREIGHT RATE</label>
+            <input type="text" id="comm-deal-price" class="hud-form-input" style="width:100%;" placeholder="e.g. ₹2,350 / Qtl or ₹2.20 / T-Km" required />
+          </div>
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem;">
+          <div>
+            <label style="display:block; font-size:0.72rem; color:#94a3b8; font-weight:700; margin-bottom:4px;">MOISTURE SPEC / QUALITY</label>
+            <input type="text" id="comm-deal-moisture" class="hud-form-input" style="width:100%;" placeholder="e.g. 11.5% Safe Dry or Cleaned" />
+          </div>
+          <div>
+            <label style="display:block; font-size:0.72rem; color:#94a3b8; font-weight:700; margin-bottom:4px;">OFFTAKE WINDOW / HORIZON</label>
+            <select id="comm-deal-horizon" class="hud-form-select" style="width:100%;">
+              <option value="Immediate Offtake (24H)">Immediate Offtake (24H)</option>
+              <option value="48-Hour Offtake Window">48-Hour Offtake Window</option>
+              <option value="7-Day Spot Delivery">7-Day Spot Delivery</option>
+              <option value="Standing Fleet Available">Standing Fleet Available</option>
+            </select>
+          </div>
+        </div>
+        <div style="display:flex; justify-content:flex-end; gap:0.5rem; margin-top:0.5rem;">
+          <button type="button" id="comm-btn-cancel-deal" class="btn btn-secondary">Cancel</button>
+          <button type="submit" class="btn btn-primary" style="background:linear-gradient(135deg, #0284c7 0%, #0369a1 100%);">
+            <span>⚡ Publish Deal to Exchange</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 3. Place Instant Bid / Counter-Offer Modal -->
+  <div id="comm-bid-dialog-modal" class="comm-modal-backdrop">
+    <div class="comm-modal-box">
+      <div class="comm-modal-header">
+        <div style="display:flex; align-items:center; gap:0.5rem;">
+          <span style="font-size:1.2rem;">🤝</span>
+          <h3 id="comm-bid-modal-title" style="font-size:1.05rem; font-weight:800; color:#f8fafc; margin:0;">Place Instant Escrow Bid</h3>
+        </div>
+        <button id="comm-btn-close-bid-modal" class="ob-btn-icon" style="background:transparent; border:none; color:#94a3b8; font-size:1.2rem; cursor:pointer;">&times;</button>
+      </div>
+      <form id="comm-bid-form" class="comm-modal-body">
+        <div id="comm-bid-modal-ref" style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:8px; padding:0.65rem 0.85rem; font-size:0.75rem; color:#cbd5e1;">
+          Target Deal: Wheat (Kalyan Sona) — 450 MT
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem;">
+          <div>
+            <label style="display:block; font-size:0.72rem; color:#94a3b8; font-weight:700; margin-bottom:4px;">YOUR BID / QUOTE</label>
+            <input type="text" id="comm-bid-amount" class="hud-form-input" style="width:100%; font-family:var(--font-mono); font-weight:800;" placeholder="e.g. ₹2,360 / Qtl" required />
+          </div>
+          <div>
+            <label style="display:block; font-size:0.72rem; color:#94a3b8; font-weight:700; margin-bottom:4px;">VOLUME COMMITTED</label>
+            <input type="text" id="comm-bid-volume" class="hud-form-input" style="width:100%;" placeholder="e.g. 450 MT or Full Lot" required />
+          </div>
+        </div>
+        <div>
+          <label style="display:block; font-size:0.72rem; color:#94a3b8; font-weight:700; margin-bottom:4px;">SETTLEMENT CLEARING TERMS</label>
+          <select id="comm-bid-terms" class="hud-form-select" style="width:100%;">
+            <option value="Instant T+0 Escrow Clearing via e-NAM / Banking API">Instant T+0 Escrow Clearing via e-NAM / Banking API</option>
+            <option value="50% Advance on Loading + 50% on Silo Weighment">50% Advance on Loading + 50% on Silo Weighment</option>
+            <option value="Standard 7-Day Commercial Letter of Credit">Standard 7-Day Commercial Letter of Credit</option>
+          </select>
+        </div>
+        <div>
+          <label style="display:block; font-size:0.72rem; color:#94a3b8; font-weight:700; margin-bottom:4px;">SPECIAL LOGISTICS OR PACKING NOTES</label>
+          <input type="text" id="comm-bid-notes" class="hud-form-input" style="width:100%;" placeholder="e.g. Dedicated tarpaulin covered trucks required; moisture verification at gate" />
+        </div>
+
+        <!-- Real-Time Escrow & Concession Calculator -->
+        <div id="comm-bid-calc-card" style="background:rgba(6,182,212,0.06); border:1px solid rgba(6,182,212,0.25); border-radius:8px; padding:0.65rem 0.85rem; font-size:0.75rem;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.4rem;">
+            <span style="font-weight:700; color:#38bdf8; text-transform:uppercase; font-size:0.68rem;">⚡ Live Escrow Clearing Matrix:</span>
+            <span id="comm-calc-spread-tag" style="font-size:0.65rem; font-family:var(--font-mono); padding:0.1rem 0.4rem; border-radius:4px; background:rgba(16,185,129,0.2); color:#10b981; font-weight:700;">MATCHED MSP</span>
+          </div>
+          <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:0.5rem; text-align:center;">
+            <div style="background:rgba(0,0,0,0.3); padding:0.4rem; border-radius:6px;">
+              <div style="font-size:0.62rem; color:#94a3b8;">Asking vs Bid Spread</div>
+              <div id="comm-calc-spread" style="font-size:0.82rem; font-weight:800; color:#ffffff; font-family:var(--font-mono); margin-top:2px;">₹0 / Qtl</div>
+            </div>
+            <div style="background:rgba(0,0,0,0.3); padding:0.4rem; border-radius:6px;">
+              <div style="font-size:0.62rem; color:#94a3b8;">Escrow Total Value</div>
+              <div id="comm-calc-total-val" style="font-size:0.82rem; font-weight:800; color:#fbbf24; font-family:var(--font-mono); margin-top:2px;">₹1.07 Cr</div>
+            </div>
+            <div style="background:rgba(0,0,0,0.3); padding:0.4rem; border-radius:6px;">
+              <div style="font-size:0.62rem; color:#94a3b8;">e-NAM Clearing Fee</div>
+              <div style="font-size:0.82rem; font-weight:800; color:#10b981; font-family:var(--font-mono); margin-top:2px;">₹0 (Subsidized)</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex; justify-content:flex-end; gap:0.5rem; margin-top:0.5rem;">
+          <button type="button" id="comm-btn-cancel-bid" class="btn btn-secondary">Cancel</button>
+          <button type="submit" class="btn btn-primary" style="background:linear-gradient(135deg, #10b981 0%, #059669 100%);">
+            <span>⚡ Transmit Binding Bid</span>
+          </button>
+        </div>
+      </form>
     </div>
   </div>
 </body>
